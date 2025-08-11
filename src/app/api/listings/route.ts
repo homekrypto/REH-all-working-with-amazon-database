@@ -3,6 +3,8 @@ import { db } from '@/lib/db'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-options'
 import { processImage } from '@/lib/image-processing'
+import { generateUniquePropertySlug } from '@/lib/slug-generator'
+import { generateMetaDescription } from '@/lib/meta-description-generator'
 
 export async function GET() {
   const listings = await db.listing.findMany({
@@ -93,18 +95,55 @@ export async function POST(req: Request) {
     imageSubjects = [] // Optional array of image subjects (kitchen, bedroom, etc.)
   } = body || {}
 
+  // Debug: Log the received data
+  console.log('🔍 API received listing data:', {
+    title,
+    imageKeysReceived: imageKeys,
+    imageSubjectsReceived: imageSubjects,
+    imageKeysLength: imageKeys.length,
+    imageSubjectsLength: imageSubjects.length
+  })
+
   // Validate required fields
   if (!title || !price || !location || !type) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
   }
 
   try {
-    // First, create the listing without images
+    // Generate unique SEO-friendly slug (without price to keep URLs stable)
+    const slug = await generateUniquePropertySlug(
+      title,
+      location,
+      async (candidateSlug: string) => {
+        const existing = await db.listing.findUnique({
+          where: { slug: candidateSlug }
+        })
+        return !existing // Return true if slug is unique (no existing record)
+      }
+    )
+
+    console.log(`🔍 Generated SEO slug: ${slug}`)
+
+    // Generate SEO meta description
+    const metaDescription = generateMetaDescription({
+      title,
+      location,
+      type,
+      description,
+      price: Number(price),
+      currency
+    })
+
+    console.log(`📝 Generated meta description (${metaDescription.length} chars): ${metaDescription}`)
+
+    // Create the listing with the generated slug and meta description
     const created = await db.listing.create({
       data: {
         agentId: userId,
         title,
+        slug,
         description,
+        metaDescription,
         price: Number(price),
         currency,
         location,
@@ -115,10 +154,14 @@ export async function POST(req: Request) {
 
     // Process images if any were uploaded
     const processedImages: any[] = []
+    console.log(`🔍 Processing ${imageKeys.length} images for listing ${created.id}`)
+    
     if (imageKeys.length > 0) {
       for (let i = 0; i < imageKeys.length; i++) {
         const tempKey = imageKeys[i]
         const imageSubject = imageSubjects[i] || undefined
+        
+        console.log(`🔍 Processing image ${i + 1}/${imageKeys.length}: ${tempKey}`)
         
         try {
           // Extract original filename from the temp key
@@ -131,7 +174,8 @@ export async function POST(req: Request) {
             location,
             imageSubject,
             originalFilename,
-            tempKey
+            tempKey,
+            index: i // Pass the index to ensure unique filenames
           })
 
           // Create the database record with SEO-optimized data
@@ -151,6 +195,7 @@ export async function POST(req: Request) {
             }
           })
 
+          console.log(`✅ Image ${i + 1} saved to database: ${imageRecord.id}`)
           processedImages.push(imageRecord)
         } catch (imageError) {
           console.error(`Failed to process image ${i}:`, imageError)

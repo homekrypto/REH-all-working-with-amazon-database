@@ -26,11 +26,19 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
+import type { Metadata } from 'next'
+import { PropertyStructuredData } from '@/lib/structured-data-generator'
+import { PropertyBreadcrumb, RelatedPropertiesModule } from '@/components/seo/internal-linking'
+
+// This needs to be converted to a server component to support generateMetadata
+// For now, we'll handle SEO via document head updates in the client component
 
 interface PropertyDetail {
   id: string
   title: string
   description: string
+  metaDescription?: string  // SEO meta description
+  slug?: string             // SEO-friendly URL slug
   price: number
   currency: string
   location: string
@@ -91,6 +99,14 @@ export default function PropertyDetailPage() {
       }
       
       const data = await response.json()
+      
+      // Handle SEO redirect from old ID-based URLs to slug URLs
+      if (data.suggestedUrl && data.suggestedUrl !== window.location.pathname) {
+        console.log('🔗 Redirecting to SEO-friendly URL:', data.suggestedUrl)
+        router.replace(data.suggestedUrl)
+        return
+      }
+      
       setProperty(data.listing) // Fix: API returns {listing: ...}
     } catch (err) {
       setError('Failed to load property details')
@@ -149,6 +165,20 @@ export default function PropertyDetailPage() {
     return originalUrl
   }
 
+  // Extract city and state for SEO H1 optimization
+  const extractCityState = (location: string) => {
+    const parts = location.split(',').map(part => part.trim()).filter(Boolean)
+    if (parts.length >= 2) {
+      return {
+        city: parts[parts.length - 2],
+        state: parts[parts.length - 1]
+      }
+    }
+    return { city: parts[0] || '', state: '' }
+  }
+
+  const { city, state } = property ? extractCityState(property.location) : { city: '', state: '' }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -178,6 +208,26 @@ export default function PropertyDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Level 2 SEO: RealEstateListing Structured Data - The Secret Weapon */}
+      <PropertyStructuredData 
+        property={{
+          id: property.id,
+          title: property.title,
+          description: property.description,
+          metaDescription: property.metaDescription,
+          price: property.price,
+          currency: property.currency,
+          location: property.location,
+          type: property.type,
+          slug: property.slug,
+          images: property.images,
+          agent: property.agent,
+          createdAt: property.createdAt,
+          updatedAt: property.updatedAt
+        }}
+        baseUrl={process.env.NEXT_PUBLIC_BASE_URL || 'https://www.realestatehub.com'}
+      />
+      
       {/* Header */}
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -193,6 +243,15 @@ export default function PropertyDetailPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Level 3 SEO: Breadcrumb Navigation */}
+        <PropertyBreadcrumb 
+          property={{
+            title: property.title,
+            location: property.location,
+            type: property.type
+          }}
+        />
+        
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
@@ -261,8 +320,9 @@ export default function PropertyDetailPage() {
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div>
+                    {/* Level 1 SEO: Optimized H1 tag mirrors meta title without brand */}
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                      {property.title}
+                      {property.title} {property.type === 'sale' ? 'for Sale' : property.type === 'rent' ? 'for Rent' : ''} in {city}{state ? `, ${state}` : ''}
                     </h1>
                     <div className="flex items-center text-gray-600">
                       <MapPin className="h-4 w-4 mr-1" />
@@ -447,6 +507,16 @@ export default function PropertyDetailPage() {
             </Card>
           </div>
         </div>
+        
+        {/* Level 3 SEO: Related Properties and Internal Linking */}
+        <RelatedPropertiesModule 
+          currentProperty={{
+            id: property.id,
+            location: property.location,
+            type: property.type,
+            price: property.price
+          }}
+        />
       </div>
     </div>
   )

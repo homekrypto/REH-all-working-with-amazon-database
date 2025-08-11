@@ -193,6 +193,14 @@ export default function ImageUploader({
     const completedImages = images.filter(img => img.uploadStatus === 'completed')
     const imageKeys = completedImages.map(img => img.tempKey!).filter(Boolean)
     const imageSubjects = completedImages.map(img => img.subject || '')
+    
+    console.log('🔍 ImageUploader updateParent:', {
+      totalImages: images.length,
+      completedImages: completedImages.length,
+      imageKeys: imageKeys,
+      imageSubjects: imageSubjects
+    })
+    
     onImagesChange(imageKeys, imageSubjects)
   }, [images, onImagesChange])
 

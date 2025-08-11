@@ -1,0 +1,453 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 217.2 91.2% 59.8%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Real Estate Specific Styles */
+@layer components {
+  .property-card {
+    @apply bg-card border border-border rounded-lg p-6 transition-all duration-300 hover:shadow-lg;
+  }
+
+  .property-image {
+    @apply w-full h-48 object-cover rounded-lg mb-4;
+  }
+
+  .property-price {
+    @apply text-2xl font-bold text-primary mb-2;
+  }
+
+  .property-title {
+    @apply text-xl font-semibold text-foreground mb-2 line-clamp-2;
+  }
+
+  .property-location {
+    @apply text-muted-foreground mb-4 flex items-center gap-2;
+  }
+
+  .property-features {
+    @apply grid grid-cols-3 gap-4 text-sm text-muted-foreground mb-4;
+  }
+
+  .feature-item {
+    @apply flex items-center gap-1;
+  }
+
+  .agent-card {
+    @apply bg-card border border-border rounded-lg p-4 text-center;
+  }
+
+  .agent-avatar {
+    @apply w-16 h-16 rounded-full mx-auto mb-3 object-cover;
+  }
+
+  .listing-gallery {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+  }
+
+  .search-filters {
+    @apply bg-card border border-border rounded-lg p-6 space-y-4;
+  }
+
+  .filter-group {
+    @apply space-y-2;
+  }
+
+  .filter-label {
+    @apply text-sm font-medium text-foreground;
+  }
+
+  .price-range {
+    @apply flex items-center gap-4;
+  }
+
+  .hero-section {
+    @apply relative bg-gradient-to-br from-primary/10 to-secondary/10 py-20;
+  }
+
+  .hero-content {
+    @apply text-center max-w-4xl mx-auto px-4;
+  }
+
+  .hero-title {
+    @apply text-4xl md:text-6xl font-bold text-foreground mb-6;
+  }
+
+  .hero-subtitle {
+    @apply text-xl text-muted-foreground mb-8 max-w-2xl mx-auto;
+  }
+
+  .stats-grid {
+    @apply grid grid-cols-2 md:grid-cols-4 gap-6 text-center;
+  }
+
+  .stat-item {
+    @apply bg-card border border-border rounded-lg p-6;
+  }
+
+  .stat-number {
+    @apply text-3xl font-bold text-primary mb-2;
+  }
+
+  .stat-label {
+    @apply text-muted-foreground;
+  }
+
+  .testimonial-card {
+    @apply bg-card border border-border rounded-lg p-6 text-center;
+  }
+
+  .testimonial-text {
+    @apply text-muted-foreground mb-4 italic;
+  }
+
+  .testimonial-author {
+    @apply font-semibold text-foreground;
+  }
+
+  .contact-form {
+    @apply bg-card border border-border rounded-lg p-6 space-y-4;
+  }
+
+  .form-group {
+    @apply space-y-2;
+  }
+
+  .form-label {
+    @apply text-sm font-medium text-foreground;
+  }
+
+  .form-input {
+    @apply w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent;
+  }
+
+  .form-textarea {
+    @apply w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent min-h-[100px] resize-y;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 h-10 py-2 px-4;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80 h-10 py-2 px-4;
+  }
+
+  .btn-outline {
+    @apply border border-input hover:bg-accent hover:text-accent-foreground h-10 py-2 px-4;
+  }
+
+  .btn-ghost {
+    @apply hover:bg-accent hover:text-accent-foreground h-10 py-2 px-4;
+  }
+
+  .btn-link {
+    @apply underline-offset-4 hover:underline text-primary h-10 py-2 px-4;
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
+  }
+
+  .badge-default {
+    @apply border-transparent bg-primary text-primary-foreground hover:bg-primary/80;
+  }
+
+  .badge-secondary {
+    @apply border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80;
+  }
+
+  .badge-outline {
+    @apply text-foreground;
+  }
+
+  .navigation {
+    @apply bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border;
+  }
+
+  .nav-link {
+    @apply text-muted-foreground hover:text-foreground transition-colors;
+  }
+
+  .nav-link-active {
+    @apply text-foreground font-medium;
+  }
+
+  .footer {
+    @apply bg-muted/50 border-t border-border;
+  }
+
+  .footer-section {
+    @apply space-y-4;
+  }
+
+  .footer-title {
+    @apply text-lg font-semibold text-foreground mb-4;
+  }
+
+  .footer-link {
+    @apply text-muted-foreground hover:text-foreground transition-colors;
+  }
+
+  .breadcrumb {
+    @apply flex items-center space-x-1 text-sm text-muted-foreground;
+  }
+
+  .breadcrumb-separator {
+    @apply mx-2;
+  }
+
+  .breadcrumb-link {
+    @apply hover:text-foreground transition-colors;
+  }
+
+  .pagination {
+    @apply flex items-center justify-center space-x-2;
+  }
+
+  .pagination-item {
+    @apply flex items-center justify-center w-10 h-10 rounded-md border border-input hover:bg-accent hover:text-accent-foreground transition-colors;
+  }
+
+  .pagination-item-active {
+    @apply bg-primary text-primary-foreground border-primary;
+  }
+
+  .skeleton {
+    @apply animate-pulse rounded-md bg-muted;
+  }
+
+  .loading-spinner {
+    @apply animate-spin rounded-full border-2 border-muted border-t-primary;
+  }
+}
+
+/* Blob Animation for Hero Section */
+@keyframes blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+/* Additional Animations */
+@layer utilities {
+  .animate-in {
+    animation-name: enter;
+    animation-duration: var(--animate-duration, 150ms);
+    --animate-duration: 150ms;
+  }
+
+  .animate-out {
+    animation-name: exit;
+    animation-duration: var(--animate-duration, 150ms);
+    --animate-duration: 150ms;
+  }
+
+  .fade-in {
+    animation-name: fadeIn;
+    animation-duration: 0.5s;
+    animation-fill-mode: both;
+  }
+
+  .fade-up {
+    animation-name: fadeUp;
+    animation-duration: 0.6s;
+    animation-fill-mode: both;
+  }
+
+  .slide-in-right {
+    animation-name: slideInRight;
+    animation-duration: 0.5s;
+    animation-fill-mode: both;
+  }
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, var(--enter-translate-y, 0), 0) scale3d(var(--enter-scale, 1), var(--enter-scale, 1), var(--enter-scale, 1));
+  }
+}
+
+@keyframes exit {
+  to {
+    opacity: 0;
+    transform: translate3d(0, var(--exit-translate-y, 0), 0) scale3d(var(--exit-scale, 1), var(--exit-scale, 1), var(--exit-scale, 1));
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(-25%);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-only {
+    display: block !important;
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+  }
+  
+  .dark {
+    --border: 0 0% 80%;
+    --input: 0 0% 80%;
+  }
+}

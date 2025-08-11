@@ -16,7 +16,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { CheckCircle, Home, User } from 'lucide-react'
 import { ThemeToggle } from '@/components/theme-toggle'
 import LoginComponent from '@/components/auth/login'
-import RegisterComponent from '@/components/auth/register'
 import ForgotPasswordComponent from '@/components/auth/forgot-password'
 import { signOut, useSession } from 'next-auth/react'
 
@@ -31,32 +30,26 @@ export default function GlobalNavigation() {
   const shouldShowThemeToggle = true // Always show theme toggle
 
   const [isLoginOpen, setIsLoginOpen] = useState(false)
-  const [isRegisterOpen, setIsRegisterOpen] = useState(false)
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false)
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false)
 
   // Authentication flow handlers
   const handleShowLogin = () => {
-    setIsRegisterOpen(false)
     setIsForgotPasswordOpen(false)
     setIsLoginOpen(true)
   }
 
   const handleShowRegister = () => {
-    setIsLoginOpen(false)
-    setIsForgotPasswordOpen(false)
-    setIsRegisterOpen(true)
+    router.push('/register')
   }
 
   const handleShowForgotPassword = () => {
     setIsLoginOpen(false)
-    setIsRegisterOpen(false)
     setIsForgotPasswordOpen(true)
   }
 
   const handleCloseAllAuth = () => {
     setIsLoginOpen(false)
-    setIsRegisterOpen(false)
     setIsForgotPasswordOpen(false)
   }
 
@@ -200,12 +193,6 @@ export default function GlobalNavigation() {
         onClose={handleCloseAllAuth} 
         onCreateAccount={handleShowRegister}
         onForgotPassword={handleShowForgotPassword}
-      />
-      
-      <RegisterComponent
-        isOpen={isRegisterOpen}
-        onClose={handleCloseAllAuth}
-        onLoginInstead={handleShowLogin}
       />
       
       <ForgotPasswordComponent

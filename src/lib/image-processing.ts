@@ -30,6 +30,7 @@ export interface ImageProcessingOptions {
   imageSubject?: string
   originalFilename: string
   tempKey: string
+  index?: number // Add index to ensure unique filenames
 }
 
 // Image size configurations
@@ -114,10 +115,10 @@ export async function getPresignedUploadUrl(filename: string, contentType: strin
  * Process and optimize image from temporary storage
  */
 export async function processImage(options: ImageProcessingOptions): Promise<ProcessedImageResult> {
-  const { listingId, propertyTitle, location, imageSubject, originalFilename, tempKey } = options
+  const { listingId, propertyTitle, location, imageSubject, originalFilename, tempKey, index } = options
   
-  // Generate SEO-friendly base filename
-  const baseFilename = generateSEOFilename(propertyTitle, imageSubject)
+  // Generate SEO-friendly base filename with index to ensure uniqueness
+  const baseFilename = generateSEOFilename(propertyTitle, imageSubject, index)
   const altText = generateAltText(propertyTitle, location, imageSubject)
   
   // Download the temporary image

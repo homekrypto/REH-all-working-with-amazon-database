@@ -10,17 +10,38 @@ export async function GET(
   const { id } = await context.params
 
   try {
-    const listing = await db.listing.findUnique({
-      where: { id },
+    // Try to find listing by slug first, then by ID
+    let listing = await db.listing.findUnique({
+      where: { slug: id },
       include: {
         images: { orderBy: { sortOrder: 'asc' } },
-        agent: { select: { id: true, name: true, email: true, image: true } },
+        agent: { select: { id: true, name: true, email: true, image: true, phone: true, agencyName: true, role: true } },
         _count: { select: { favorites: true, leads: true } }
       }
     })
 
+    // If not found by slug, try by ID (for backward compatibility)
+    if (!listing) {
+      listing = await db.listing.findUnique({
+        where: { id },
+        include: {
+          images: { orderBy: { sortOrder: 'asc' } },
+          agent: { select: { id: true, name: true, email: true, image: true, phone: true, agencyName: true, role: true } },
+          _count: { select: { favorites: true, leads: true } }
+        }
+      })
+    }
+
     if (!listing) {
       return NextResponse.json({ error: 'Listing not found' }, { status: 404 })
+    }
+
+    // If found by ID but has a slug, suggest the slug URL for SEO
+    if (listing.slug && id !== listing.slug && id === listing.id) {
+      return NextResponse.json({ 
+        listing,
+        suggestedUrl: `/properties/${listing.slug}` // Frontend can handle redirect
+      })
     }
 
     return NextResponse.json({ listing })

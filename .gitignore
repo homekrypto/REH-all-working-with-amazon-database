@@ -47,3 +47,20 @@ test
 prompt
 
 server.log
+
+# Test screenshots and debug files
+*.png
+error-debug.png
+login-redirect-test.png
+registration-error.png
+registration-success-error.png
+registration-test-error.png
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary files
+*.tmp
+*.temp

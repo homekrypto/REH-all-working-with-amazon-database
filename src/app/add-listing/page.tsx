@@ -355,6 +355,15 @@ export default function AddListingPage() {
   const handleSubmit = async () => {
     setIsLoading(true)
     try {
+      // Debug: Log the data being submitted
+      console.log('🔍 Form submission data:', {
+        title: listingData.title,
+        imageKeys: imageKeys,
+        imageSubjects: imageSubjects,
+        imageKeysLength: imageKeys.length,
+        imageSubjectsLength: imageSubjects.length
+      })
+      
       const url = isEditMode ? `/api/listings/${editId}` : '/api/listings'
       const method = isEditMode ? 'PATCH' : 'POST'
       
