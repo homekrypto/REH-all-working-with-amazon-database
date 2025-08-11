@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useRef, useCallback, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -13,6 +13,7 @@ import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
+import ImageUploader from '@/components/ui/image-uploader'
 import { 
   ArrowLeft, 
   ArrowRight, 
@@ -92,8 +93,6 @@ interface ListingData {
   nearbyPlaces: string[]
   
   // Step 6: Media Uploads
-  coverImage: string | null
-  galleryImages: string[]
   videoTourUrl: string
   virtualTourUrl: string
   floorPlanImage: string | null
@@ -152,8 +151,13 @@ const languages = [
 
 export default function AddListingPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const editId = searchParams.get('edit')
+  const isEditMode = !!editId
+  
   const [step, setStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
+  const [loadingExisting, setLoadingExisting] = useState(isEditMode)
   const [listingData, setListingData] = useState<ListingData>({
     title: '',
     description: '',
@@ -190,8 +194,6 @@ export default function AddListingPage() {
     energyEfficiencyRating: '',
     features: [],
     nearbyPlaces: [],
-    coverImage: null,
-    galleryImages: [],
     videoTourUrl: '',
     virtualTourUrl: '',
     floorPlanImage: null,
@@ -210,13 +212,110 @@ export default function AddListingPage() {
     acceptTerms: false
   })
 
-  const coverInputRef = useRef<HTMLInputElement>(null)
-  const galleryInputRef = useRef<HTMLInputElement>(null)
   const floorPlanInputRef = useRef<HTMLInputElement>(null)
+
+  // New state for SEO-optimized image handling
+  const [imageKeys, setImageKeys] = useState<string[]>([])
+  const [imageSubjects, setImageSubjects] = useState<string[]>([])
+
+  // Load existing listing data in edit mode
+  useEffect(() => {
+    if (isEditMode && editId) {
+      const loadExistingListing = async () => {
+        try {
+          setLoadingExisting(true)
+          const response = await fetch(`/api/listings/${editId}`)
+          
+          if (!response.ok) {
+            throw new Error('Failed to load listing')
+          }
+          
+          const listing = await response.json()
+          
+          // Map API response to form data
+          setListingData({
+            title: listing.title || '',
+            description: listing.description || '',
+            listingType: listing.listingType || '',
+            propertyType: listing.type || '',
+            country: listing.country || '',
+            city: listing.city || '',
+            streetAddress: listing.streetAddress || '',
+            state: listing.state || '',
+            postalCode: listing.postalCode || '',
+            latitude: listing.latitude || 0,
+            longitude: listing.longitude || 0,
+            price: listing.price || 0,
+            currency: listing.currency || 'USD',
+            paymentFrequency: listing.paymentFrequency || 'one-time',
+            isNegotiable: listing.isNegotiable || false,
+            acceptsCrypto: listing.acceptsCrypto || false,
+            cryptoTypes: listing.cryptoTypes || [],
+            maintenanceFees: listing.maintenanceFees || 0,
+            propertyTaxes: listing.propertyTaxes || 0,
+            totalArea: listing.totalArea || 0,
+            livingArea: listing.livingArea || 0,
+            lotSize: listing.lotSize || 0,
+            areaUnit: listing.areaUnit || 'sqm',
+            yearBuilt: listing.yearBuilt || new Date().getFullYear(),
+            bedrooms: listing.bedrooms || 0,
+            bathrooms: listing.bathrooms || 0,
+            floors: listing.floors || 0,
+            parkingSpaces: listing.parkingSpaces || 0,
+            furnishingStatus: listing.furnishingStatus || 'unfurnished',
+            floorNumber: listing.floorNumber || 0,
+            hasElevator: listing.hasElevator || false,
+            view: listing.view || '',
+            energyEfficiencyRating: listing.energyEfficiencyRating || '',
+            features: listing.features || [],
+            nearbyPlaces: listing.nearbyPlaces || [],
+            videoTourUrl: listing.videoTourUrl || '',
+            virtualTourUrl: listing.virtualTourUrl || '',
+            floorPlanImage: null,
+            availableFrom: listing.availableFrom || '',
+            ownershipType: listing.ownershipType || '',
+            titleDeedAvailable: listing.titleDeedAvailable || false,
+            isExclusive: listing.isExclusive || false,
+            agentName: listing.agent?.name || 'John Doe',
+            agentPhone: listing.agent?.phone || '+1 (555) 123-4567',
+            agentEmail: listing.agent?.email || 'john.doe@example.com',
+            agencyName: listing.agent?.agencyName || '',
+            licenseNumber: listing.licenseNumber || '',
+            whatsappLink: listing.whatsappLink || '',
+            languagesSpoken: listing.languagesSpoken || [],
+            status: listing.status || 'draft',
+            acceptTerms: true // Assume accepted for existing listings
+          })
+          
+          // Load existing images
+          if (listing.images && listing.images.length > 0) {
+            const keys = listing.images.map((img: any) => img.url)
+            const subjects = listing.images.map((img: any) => img.subject || 'property')
+            setImageKeys(keys)
+            setImageSubjects(subjects)
+          }
+          
+        } catch (error) {
+          console.error('Error loading listing:', error)
+          alert('Failed to load listing for editing. You will create a new listing instead.')
+        } finally {
+          setLoadingExisting(false)
+        }
+      }
+      
+      loadExistingListing()
+    }
+  }, [isEditMode, editId])
 
   const updateField = (field: keyof ListingData, value: any) => {
     setListingData(prev => ({ ...prev, [field]: value }))
   }
+
+  // Handle image uploads from the new component
+  const handleImagesChange = useCallback((keys: string[], subjects: string[]) => {
+    setImageKeys(keys)
+    setImageSubjects(subjects)
+  }, [])
 
   const handleFeatureToggle = (feature: string) => {
     const currentFeatures = listingData.features
@@ -256,8 +355,11 @@ export default function AddListingPage() {
   const handleSubmit = async () => {
     setIsLoading(true)
     try {
-      const res = await fetch('/api/listings', {
-        method: 'POST',
+      const url = isEditMode ? `/api/listings/${editId}` : '/api/listings'
+      const method = isEditMode ? 'PATCH' : 'POST'
+      
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: listingData.title,
@@ -266,14 +368,26 @@ export default function AddListingPage() {
           currency: listingData.currency,
           location: [listingData.streetAddress, listingData.city, listingData.country].filter(Boolean).join(', '),
           type: listingData.propertyType,
-          images: [listingData.coverImage, ...listingData.galleryImages].filter(Boolean),
-          status: listingData.status === 'published' ? 'active' : 'pending',
+          imageKeys: imageKeys, // Use the new image processing system
+          imageSubjects: imageSubjects,
+          status: 'active', // Always set to active - no admin approval needed
         }),
       })
-      if (!res.ok) throw new Error('Failed to create listing')
-      router.push('/dashboard')
+      
+      if (!res.ok) {
+        const errorData = await res.json()
+        throw new Error(errorData.error || `Failed to ${isEditMode ? 'update' : 'create'} listing`)
+      }
+      
+      const result = await res.json()
+      console.log(`✅ Listing ${isEditMode ? 'updated' : 'created'} successfully:`, result)
+      
+      // Show success message and redirect to dashboard with success notification
+      const action = isEditMode ? 'listing-updated' : 'listing-created'
+      router.push(`/dashboard?success=${action}&title=` + encodeURIComponent(listingData.title))
     } catch (e) {
-      console.error(e)
+      console.error(`❌ Failed to ${isEditMode ? 'update' : 'create'} listing:`, e)
+      alert(`Failed to ${isEditMode ? 'update' : 'create'} listing: ` + (e as Error).message)
       setIsLoading(false)
     }
   }
@@ -291,7 +405,7 @@ export default function AddListingPage() {
       case 5:
         return true // Features are optional
       case 6:
-        return listingData.coverImage !== null
+        return imageKeys.length > 0 // At least one image must be uploaded
       case 7:
         return listingData.availableFrom && listingData.ownershipType
       case 8:
@@ -324,21 +438,21 @@ export default function AddListingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Building className="h-8 w-8 text-blue-600" />
-              <span className="text-xl font-bold text-gray-900">Add New Listing</span>
+    <div className="min-h-screen bg-background pt-16">
+        {/* Header */}
+        <div className="bg-card shadow-sm border-b border-border">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <Building className="h-8 w-8 text-primary" />
+                <span className="text-xl font-bold text-foreground">Add New Listing</span>
+              </div>
+              <Button variant="outline" onClick={() => router.push('/dashboard')}>
+                Back to Dashboard
+              </Button>
             </div>
-            <Button variant="outline" onClick={() => router.push('/dashboard')}>
-              Back to Dashboard
-            </Button>
           </div>
         </div>
-      </div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Progress Bar */}
@@ -350,13 +464,13 @@ export default function AddListingPage() {
                 return (
                   <div key={stepNumber} className="flex items-center">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${
-                      step >= stepNumber ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
+                      step >= stepNumber ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
                     }`}>
                       {step > stepNumber ? <CheckCircle className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
                     </div>
                     {stepNumber < 9 && (
                       <div className={`w-16 h-1 mx-2 ${
-                        step > stepNumber ? 'bg-blue-600' : 'bg-gray-200'
+                        step > stepNumber ? 'bg-primary' : 'bg-muted'
                       }`} />
                     )}
                   </div>
@@ -874,83 +988,20 @@ export default function AddListingPage() {
                 {step === 6 && (
                   <div className="space-y-6">
                     <div className="space-y-4">
-                      <h3 className="text-lg font-semibold">Cover Image (Required)</h3>
-                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                        {listingData.coverImage ? (
-                          <div className="mb-4">
-                            <img src={listingData.coverImage} alt="Cover" className="mx-auto max-h-48 rounded" />
-                          </div>
-                        ) : (
-                          <>
-                            <Camera className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                            <p className="text-gray-600 mb-4">Click to upload cover image</p>
-                          </>
-                        )}
-                        <input
-                          ref={coverInputRef}
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0]
-                            if (file) {
-                              const url = URL.createObjectURL(file)
-                              updateField('coverImage', url)
-                            }
-                          }}
-                        />
-                        <Button variant="outline" onClick={() => coverInputRef.current?.click()}>
-                          <Upload className="h-4 w-4 mr-2" />
-                          Choose File
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-semibold">Gallery Images</h3>
-                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                        <Camera className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-600 mb-4">Upload multiple images (drag and drop supported)</p>
-                        <input
-                          ref={galleryInputRef}
-                          type="file"
-                          accept="image/*"
-                          multiple
-                          className="hidden"
-                          onChange={(e) => {
-                            const files = Array.from(e.target.files || [])
-                            if (files.length > 0) {
-                              const urls = files.map((f) => URL.createObjectURL(f))
-                              const current = listingData.galleryImages
-                              updateField('galleryImages', [...current, ...urls])
-                            }
-                          }}
-                        />
-                        <Button variant="outline" onClick={() => galleryInputRef.current?.click()}>
-                          <Plus className="h-4 w-4 mr-2" />
-                          Add Images
-                        </Button>
-                      </div>
-                      {listingData.galleryImages.length > 0 && (
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                          {listingData.galleryImages.map((image, index) => (
-                            <div key={index} className="relative">
-                              <div className="aspect-square bg-gray-200 rounded-lg overflow-hidden">
-                                <img src={image} alt={`Gallery ${index + 1}`} className="w-full h-full object-cover" />
-                              </div>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                className="absolute top-2 right-2 h-6 w-6 p-0"
-                                onClick={() => {
-                                  const current = listingData.galleryImages
-                                  updateField('galleryImages', current.filter((_, i) => i !== index))
-                                }}
-                              >
-                                <X className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          ))}
+                      <h3 className="text-lg font-semibold">Property Images</h3>
+                      <p className="text-sm text-gray-600">
+                        Upload property images with room/subject tagging for better SEO. At least one image is required.
+                      </p>
+                      <ImageUploader
+                        onImagesChange={handleImagesChange}
+                        maxImages={20}
+                        disabled={isLoading}
+                      />
+                      {imageKeys.length > 0 && (
+                        <div className="mt-4 p-3 bg-green-50 rounded-md border border-green-200">
+                          <p className="text-sm text-green-700">
+                            ✓ {imageKeys.length} image{imageKeys.length > 1 ? 's' : ''} uploaded successfully
+                          </p>
                         </div>
                       )}
                     </div>
@@ -977,37 +1028,37 @@ export default function AddListingPage() {
                       </div>
                     </div>
 
-                      <div className="space-y-4">
+                    <div className="space-y-4">
                       <h3 className="text-lg font-semibold">Floor Plan (Optional)</h3>
-                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                          {listingData.floorPlanImage ? (
-                            <div className="mb-4">
-                              <img src={listingData.floorPlanImage} alt="Floor plan" className="mx-auto max-h-48 rounded" />
-                            </div>
-                          ) : (
-                            <>
-                              <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                              <p className="text-gray-600 mb-4">Upload floor plan image</p>
-                            </>
-                          )}
-                          <input
-                            ref={floorPlanInputRef}
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0]
-                              if (file) {
-                                const url = URL.createObjectURL(file)
-                                updateField('floorPlanImage', url)
-                              }
-                            }}
-                          />
-                          <Button variant="outline" onClick={() => floorPlanInputRef.current?.click()}>
-                            <Upload className="h-4 w-4 mr-2" />
-                            Choose File
-                          </Button>
-                        </div>
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                        {listingData.floorPlanImage ? (
+                          <div className="mb-4">
+                            <img src={listingData.floorPlanImage} alt="Floor plan" className="mx-auto max-h-48 rounded" />
+                          </div>
+                        ) : (
+                          <>
+                            <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                            <p className="text-gray-600 mb-4">Upload floor plan image</p>
+                          </>
+                        )}
+                        <input
+                          ref={floorPlanInputRef}
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0]
+                            if (file) {
+                              const url = URL.createObjectURL(file)
+                              updateField('floorPlanImage', url)
+                            }
+                          }}
+                        />
+                        <Button variant="outline" onClick={() => floorPlanInputRef.current?.click()}>
+                          <Upload className="h-4 w-4 mr-2" />
+                          Choose File
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 )}

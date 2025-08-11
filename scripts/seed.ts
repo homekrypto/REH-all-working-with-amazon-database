@@ -14,11 +14,11 @@ async function main() {
 
   await prisma.user.upsert({
     where: { email: adminEmail },
-    update: { passwordHash: adminHash, role: 'admin', name: 'Admin User' },
+    update: { passwordHash: adminHash, role: 'EXPERT', name: 'Admin User' },
     create: {
       email: adminEmail,
       name: 'Admin User',
-      role: 'admin',
+      role: 'EXPERT',
       passwordHash: adminHash,
       image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200',
     },
@@ -26,11 +26,11 @@ async function main() {
 
   await prisma.user.upsert({
     where: { email: agentEmail },
-    update: { passwordHash: agentHash, role: 'agent', name: 'Test Agent' },
+    update: { passwordHash: agentHash, role: 'AGENT', name: 'Test Agent' },
     create: {
       email: agentEmail,
       name: 'Test Agent',
-      role: 'agent',
+      role: 'AGENT',
       passwordHash: agentHash,
       image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200',
     },

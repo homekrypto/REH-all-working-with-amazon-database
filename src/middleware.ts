@@ -9,7 +9,7 @@ export default withAuth(
     // Check if user has required role for protected routes
     if (pathname.startsWith('/add-listing')) {
       const userRole = token?.role as string
-      if (!userRole || !['agent', 'admin'].includes(userRole)) {
+      if (!userRole || !['AGENT', 'EXPERT', 'agent', 'admin'].includes(userRole)) {
         return NextResponse.redirect(new URL('/dashboard?error=insufficient-permissions', req.url))
       }
     }
@@ -17,7 +17,7 @@ export default withAuth(
     // Admin-only routes
     if (pathname.startsWith('/admin')) {
       const userRole = token?.role as string
-      if (userRole !== 'admin') {
+      if (userRole !== 'admin' && userRole !== 'ADMIN') {
         return NextResponse.redirect(new URL('/dashboard?error=admin-required', req.url))
       }
     }
@@ -36,8 +36,15 @@ export default withAuth(
           '/agents',
           '/blog',
           '/pricing',
+          '/register',
+          '/auth/login',
+          '/verify-email',
+          '/complete-registration',
+          '/reset-password',
           '/api/listings',
-          '/api/health'
+          '/api/health',
+          '/api/auth',
+          '/api/packages'
         ]
         
         // Check if route is public

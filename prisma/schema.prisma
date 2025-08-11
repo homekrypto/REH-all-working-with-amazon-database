@@ -13,6 +13,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  USER
+  AGENT
+  EXPERT
+}
+
+enum SubscriptionStatus {
+  FREE
+  PENDING
+  ACTIVE
+  CANCELED
+  EXPIRED
+}
+
 model User {
   id            String    @id @default(cuid())
   email         String?   @unique
@@ -20,15 +34,28 @@ model User {
   image         String?
   emailVerified DateTime?
   passwordHash  String?
-  role          String    @default("user")
+  role          Role      @default(USER)
   phone         String?
   agencyName    String?
-  resetToken    String?
-  resetTokenExpiry DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  accounts      Account[]
-  sessions      Session[]
+  bio           String?
+  
+  // Subscription fields
+  packageId          String?
+  subscriptionStatus SubscriptionStatus @default(FREE)
+  subscriptionEnd    DateTime?
+  stripeCustomerId   String?
+  
+  // Existing auth fields
+  resetToken         String?
+  resetTokenExpiry   DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  
+  // Relations
+  package            Package?            @relation(fields: [packageId], references: [id])
+  emailVerifications EmailVerification[]
+  accounts           Account[]
+  sessions           Session[]
 
   // Back-relations
   listings         Listing[]        @relation("UserListings")
@@ -37,6 +64,31 @@ model User {
   leadsAsAgent     Lead[]           @relation("LeadAgent")
   conversations    ConversationParticipant[]
   messagesSent     Message[]
+}
+
+model Package {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  price       Int      // in cents
+  interval    String   // month, year
+  listingsMax Int
+  features    String   // JSON string for SQLite compatibility
+  stripePriceId String @unique
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  
+  users       User[]
+}
+
+model EmailVerification {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Post {
@@ -108,10 +160,27 @@ model Listing {
 model ListingImage {
   id        String   @id @default(cuid())
   listingId String
-  url       String
-  sortOrder Int      @default(0)
-
   listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  // SEO Fields
+  altText       String   // Example: "The modern kitchen in the Luxury Downtown Penthouse in New York"
+  originalName  String   // The original filename, e.g., "IMG_4567.JPG"
+  imageSubject  String?  // Optional: "kitchen", "bedroom", "living room", etc.
+  
+  // Storage & URLs
+  storageKey    String   @unique // The unique key/path in your cloud storage
+  
+  // URLs for Responsive Images (srcset)
+  url_large     String   // URL for the large version (e.g., 1920w)
+  url_medium    String   // URL for the medium version (e.g., 1080w)
+  url_small     String   // URL for the small version (e.g., 720w)
+  url_thumbnail String   // URL for a tiny thumbnail (e.g., 300w)
+
+  // Legacy field for backward compatibility
+  url           String   // Points to url_large for existing code
+
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
 }
 
 model Favorite {

@@ -78,9 +78,9 @@ export const authOptions: NextAuthOptions = {
     }
   },
   pages: {
-    signIn: '/',
+    signIn: '/auth/login',
     signOut: '/',
-    error: '/', // Redirect errors to homepage
+    error: '/auth/login', // Redirect errors to login page
   },
   debug: true,
   logger: {

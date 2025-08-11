@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { 
@@ -22,8 +22,13 @@ import { signOut, useSession } from 'next-auth/react'
 
 export default function GlobalNavigation() {
   const router = useRouter()
+  const pathname = usePathname()
   const { data: session } = useSession()
   const user = session?.user as any
+
+  // Define pages where theme toggle should be available (make it available everywhere)
+  const allowedThemeTogglePages = ['/', '/agents', '/dashboard', '/add-listing', '/properties', '/login', '/register']
+  const shouldShowThemeToggle = true // Always show theme toggle
 
   const [isLoginOpen, setIsLoginOpen] = useState(false)
   const [isRegisterOpen, setIsRegisterOpen] = useState(false)
@@ -129,7 +134,7 @@ export default function GlobalNavigation() {
             </div>
             
             <div className="flex items-center space-x-4">
-              <ThemeToggle />
+              {shouldShowThemeToggle && <ThemeToggle />}
               {user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

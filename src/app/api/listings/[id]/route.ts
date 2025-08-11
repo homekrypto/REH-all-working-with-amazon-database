@@ -83,17 +83,24 @@ export async function PATCH(
       }
     })
 
-    // Handle images update if provided
+    // Handle images update if provided (Legacy support - TODO: Migrate to new image system)
     if (images && Array.isArray(images)) {
       // Delete existing images
       await db.listingImage.deleteMany({ where: { listingId: id } })
       
-      // Add new images
+      // Add new images with minimal required fields for backward compatibility
       if (images.length > 0) {
         await db.listingImage.createMany({
           data: images.map((url: string, idx: number) => ({
             listingId: id,
-            url,
+            altText: `Property image ${idx + 1}`, // Default alt text
+            originalName: `image-${idx + 1}.jpg`, // Default filename
+            storageKey: url, // Use URL as storage key for legacy
+            url_large: url, // Use same URL for all sizes for legacy
+            url_medium: url,
+            url_small: url,
+            url_thumbnail: url,
+            url: url, // Main URL field
             sortOrder: idx
           }))
         })

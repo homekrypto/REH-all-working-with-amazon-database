@@ -24,7 +24,6 @@ import {
   Grid,
   List
 } from 'lucide-react'
-import { ThemeToggle } from '@/components/theme-toggle'
 
 // Will fetch from API; fallback to empty list initially
 const mockProperties = [
@@ -472,10 +471,22 @@ export default function PropertySearchPage() {
                       </div>
                       
                       <div className="flex gap-2">
-                        <Button className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white" size="sm">
+                        <Button 
+                          className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white" 
+                          size="sm"
+                          onClick={() => router.push(`/properties/${property.id}`)}
+                        >
                           View Details
                         </Button>
-                        <Button variant="outline" size="sm" className="flex-1 border-gray-200 dark:border-gray-700">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1 border-gray-200 dark:border-gray-700"
+                          onClick={() => {
+                            // TODO: Implement tour scheduling modal
+                            console.log('Schedule tour for property:', property.id)
+                          }}
+                        >
                           <Calendar className="h-4 w-4 mr-1" />
                           Tour
                         </Button>
@@ -549,10 +560,20 @@ export default function PropertySearchPage() {
                           </div>
                           
                           <div className="flex gap-2">
-                            <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
+                            <Button 
+                              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+                              onClick={() => router.push(`/properties/${property.id}`)}
+                            >
                               View Details
                             </Button>
-                            <Button variant="outline" className="border-gray-200 dark:border-gray-700">
+                            <Button 
+                              variant="outline" 
+                              className="border-gray-200 dark:border-gray-700"
+                              onClick={() => {
+                                // TODO: Implement tour scheduling modal
+                                console.log('Schedule tour for property:', property.id)
+                              }}
+                            >
                               <Calendar className="h-4 w-4 mr-1" />
                               Schedule Tour
                             </Button>
