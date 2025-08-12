@@ -15,6 +15,77 @@ import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
 import ImageUploader from '@/components/ui/image-uploader'
+import { 
+  ArrowLeft, 
+  ArrowRight, 
+  Building, 
+  CheckCircle, 
+  MapPin, 
+  FileText, 
+  Upload,
+  Home,
+  DollarSign,
+  Ruler,
+  Star,
+  Calendar,
+  User,
+  Eye
+} from 'lucide-react'
+
+// Define the ListingData interface
+interface ListingData {
+  title: string
+  description: string
+  listingType: string
+  propertyType: string
+  country: string
+  city: string
+  streetAddress: string
+  state: string
+  postalCode: string
+  latitude: number
+  longitude: number
+  price: number
+  currency: string
+  paymentFrequency: string
+  isNegotiable: boolean
+  acceptsCrypto: boolean
+  cryptoTypes: string[]
+  maintenanceFees: number
+  propertyTaxes: number
+  totalArea: number
+  livingArea: number
+  lotSize: number
+  areaUnit: string
+  yearBuilt: number
+  bedrooms: number
+  bathrooms: number
+  floors: number
+  parkingSpaces: number
+  furnishingStatus: string
+  floorNumber: number
+  hasElevator: boolean
+  view: string
+  energyEfficiencyRating: string
+  features: string[]
+  nearbyPlaces: string[]
+  videoTourUrl: string
+  virtualTourUrl: string
+  floorPlanImage: File | null
+  availableFrom: string
+  ownershipType: string
+  titleDeedAvailable: boolean
+  isExclusive: boolean
+  agentName: string
+  agentPhone: string
+  agentEmail: string
+  agencyName: string
+  licenseNumber: string
+  whatsappLink: string
+  languagesSpoken: string[]
+  status: string
+  acceptTerms: boolean
+}
 
 function AddListingContent() {
   const router = useRouter()
@@ -1338,6 +1409,16 @@ function AddListingContent() {
   )
 }
 
+// Constants for form options
+const listingTypes = ['Sale', 'Rent', 'Lease']
+const propertyTypes = ['House', 'Apartment', 'Condo', 'Townhouse', 'Villa', 'Office', 'Retail', 'Warehouse', 'Land']
+const countries = ['United States', 'Canada', 'United Kingdom', 'Australia', 'Germany', 'France', 'Spain', 'Italy', 'Netherlands', 'Other']
+const currencies = ['USD', 'EUR', 'GBP', 'CAD', 'AUD', 'CHF', 'JPY', 'CNY']
+const features = ['Swimming Pool', 'Garden', 'Garage', 'Balcony', 'Terrace', 'Fireplace', 'Air Conditioning', 'Heating', 'Security System', 'Gym', 'Elevator']
+const nearbyPlaces = ['School', 'Hospital', 'Shopping Mall', 'Park', 'Restaurant', 'Bank', 'Pharmacy', 'Gas Station', 'Public Transport', 'Airport']
+const languages = ['English', 'Spanish', 'French', 'German', 'Italian', 'Portuguese', 'Chinese', 'Japanese', 'Arabic', 'Other']
+
+// Separate component for search params to handle Suspense properly
 export default function AddListingPage() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
