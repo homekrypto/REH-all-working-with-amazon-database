@@ -3,9 +3,16 @@ import Stripe from 'stripe'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth-options'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-07-30.basil',
-})
+// Initialize Stripe only when we have the secret key
+const getStripe = () => {
+  const secretKey = process.env.STRIPE_SECRET_KEY
+  if (!secretKey) {
+    throw new Error('STRIPE_SECRET_KEY is not configured')
+  }
+  return new Stripe(secretKey, {
+    apiVersion: '2025-07-30.basil',
+  })
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,6 +36,9 @@ export async function POST(request: NextRequest) {
         error: 'Invalid upgrade path' 
       }, { status: 400 })
     }
+
+    // Get Stripe instance
+    const stripe = getStripe()
 
     // Create Stripe checkout session
     const checkoutSession = await stripe.checkout.sessions.create({

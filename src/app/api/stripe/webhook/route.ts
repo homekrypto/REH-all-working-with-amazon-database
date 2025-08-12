@@ -3,9 +3,16 @@ import Stripe from 'stripe'
 import { db } from '@/lib/db'
 import { emailService } from '@/lib/email'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-07-30.basil',
-})
+// Initialize Stripe only when we have the secret key
+const getStripe = () => {
+  const secretKey = process.env.STRIPE_SECRET_KEY
+  if (!secretKey) {
+    throw new Error('STRIPE_SECRET_KEY is not configured')
+  }
+  return new Stripe(secretKey, {
+    apiVersion: '2025-07-30.basil',
+  })
+}
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
 
@@ -24,6 +31,7 @@ export async function POST(request: Request) {
     let event: Stripe.Event
 
     try {
+      const stripe = getStripe()
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
     } catch (err) {
       console.error('Webhook signature verification failed:', err)
@@ -88,6 +96,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
 
     // Get subscription details
     const subscriptionId = session.subscription as string
+    const stripe = getStripe()
     const subscription = await stripe.subscriptions.retrieve(subscriptionId)
 
     // Update user subscription status
@@ -237,6 +246,7 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
     console.log('Invoice payment succeeded:', invoice.id)
 
     if ((invoice as any).subscription) {
+      const stripe = getStripe()
       const subscription = await stripe.subscriptions.retrieve((invoice as any).subscription as string)
       const userId = (subscription as any).metadata?.userId
 
@@ -263,6 +273,7 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
     console.log('Invoice payment failed:', invoice.id)
 
     if ((invoice as any).subscription) {
+      const stripe = getStripe()
       const subscription = await stripe.subscriptions.retrieve((invoice as any).subscription as string)
       const userId = (subscription as any).metadata?.userId
 
