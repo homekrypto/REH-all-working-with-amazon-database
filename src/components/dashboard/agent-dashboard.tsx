@@ -458,7 +458,7 @@ export default function AgentDashboard({ user }: AgentDashboardProps) {
                             <img 
                               src={property.image} 
                               alt={property.title}
-                              className="w-full h-48 object-cover"
+                              className="w-full h-48 object-contain bg-gray-100"
                             />
                             <div className="absolute top-2 right-2">
                               {getStatusBadge(property.status)}

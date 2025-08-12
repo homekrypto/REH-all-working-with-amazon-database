@@ -356,21 +356,27 @@ export default function ImageUploader({
                       <img
                         src={image.preview}
                         alt={`Preview ${index + 1}`}
-                        className="w-full h-full object-cover rounded-lg"
+                        className="w-full h-full object-contain bg-gray-50 rounded-lg"
                       />
                       
-                      {/* Status Overlay */}
-                      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-lg">
-                        {image.uploadStatus === 'uploading' && (
-                          <Loader2 className="h-6 w-6 text-white animate-spin" />
-                        )}
-                        {image.uploadStatus === 'completed' && (
-                          <Check className="h-6 w-6 text-green-400" />
-                        )}
-                        {image.uploadStatus === 'error' && (
-                          <AlertCircle className="h-6 w-6 text-red-400" />
-                        )}
-                      </div>
+                      {/* Status Overlay - Only show for uploading/error states */}
+                      {(image.uploadStatus === 'uploading' || image.uploadStatus === 'error') && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-lg">
+                          {image.uploadStatus === 'uploading' && (
+                            <Loader2 className="h-6 w-6 text-white animate-spin" />
+                          )}
+                          {image.uploadStatus === 'error' && (
+                            <AlertCircle className="h-6 w-6 text-red-400" />
+                          )}
+                        </div>
+                      )}
+                      
+                      {/* Success indicator - small check mark in corner */}
+                      {image.uploadStatus === 'completed' && (
+                        <div className="absolute top-1 right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                          <Check className="h-4 w-4 text-white" />
+                        </div>
+                      )}
                     </div>
 
                     {/* Image Details */}

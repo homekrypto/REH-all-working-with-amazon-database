@@ -21,12 +21,12 @@ export async function GET() {
         email, 
         name, 
         role, 
-        subscriptionStatus, 
-        packageId, 
-        subscriptionEnd,
-        emailVerified,
-        stripeCustomerId
-      FROM User 
+        "subscriptionStatus", 
+        "packageId", 
+        "subscriptionEnd",
+        "emailVerified",
+        "stripeCustomerId"
+      FROM "User" 
       WHERE email = ${session.user.email} 
       LIMIT 1
     ` as any[]
@@ -44,8 +44,8 @@ export async function GET() {
     let packageInfo = null
     if (user.packageId) {
       const packageResult = await db.$queryRaw`
-        SELECT id, name, description, price, interval, listingsMax, features
-        FROM Package 
+        SELECT id, name, description, price, interval, "listingsMax", features
+        FROM "Package" 
         WHERE id = ${user.packageId} 
         LIMIT 1
       ` as any[]

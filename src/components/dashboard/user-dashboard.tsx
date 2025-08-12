@@ -268,7 +268,7 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                       <img 
                         src={property.image} 
                         alt={property.title}
-                        className="w-full h-48 object-cover"
+                        className="w-full h-48 object-contain bg-gray-100"
                       />
                       <Button
                         variant="ghost"
@@ -376,7 +376,7 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                       <img 
                         src={property.image} 
                         alt={property.title}
-                        className="w-full h-48 object-cover"
+                        className="w-full h-48 object-contain bg-gray-100"
                       />
                       <Button
                         variant="ghost"

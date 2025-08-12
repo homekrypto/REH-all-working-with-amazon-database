@@ -22,7 +22,11 @@ import {
   ImageIcon,
   Eye,
   Users,
-  DollarSign
+  DollarSign,
+  Maximize2,
+  X,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
@@ -79,12 +83,17 @@ export default function PropertyDetailPage() {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [isFavorited, setIsFavorited] = useState(false)
   const [imageError, setImageError] = useState<boolean>(false)
+  const [isImageFullscreen, setIsImageFullscreen] = useState(false)
 
   useEffect(() => {
-    fetchProperty()
+    if (params.id) {
+      fetchProperty()
+    }
   }, [params.id])
 
   const fetchProperty = async () => {
+    if (!params.id) return
+    
     try {
       setLoading(true)
       const response = await fetch(`/api/listings/${params.id}`)
@@ -154,6 +163,32 @@ export default function PropertyDetailPage() {
       }
     } catch (err) {
       console.error('Error toggling favorite:', err)
+    }
+  }
+
+  const openFullscreenImage = () => {
+    setIsImageFullscreen(true)
+  }
+
+  const closeFullscreenImage = () => {
+    setIsImageFullscreen(false)
+  }
+
+  const goToPreviousImage = () => {
+    if (property?.images && property.images.length > 1) {
+      setSelectedImageIndex((prev) => 
+        prev === 0 ? property.images.length - 1 : prev - 1
+      )
+      setImageError(false)
+    }
+  }
+
+  const goToNextImage = () => {
+    if (property?.images && property.images.length > 1) {
+      setSelectedImageIndex((prev) => 
+        prev === property.images.length - 1 ? 0 : prev + 1
+      )
+      setImageError(false)
     }
   }
 
@@ -258,20 +293,32 @@ export default function PropertyDetailPage() {
             {/* Image Gallery */}
             <Card>
               <CardContent className="p-0">
-                <div className="relative aspect-video rounded-lg overflow-hidden">
+                <div className="relative flex items-center justify-center min-h-[400px] max-h-[600px] rounded-lg overflow-hidden bg-gray-50">
                   {property.images && property.images.length > 0 && !imageError ? (
-                    <Image
-                      src={getProxiedImageUrl(property.images[selectedImageIndex]?.url || '/placeholder-property.jpg')}
-                      alt={property.images[selectedImageIndex]?.altText || property.title}
-                      fill
-                      className="object-cover"
-                      onError={() => {
-                        console.warn('Image failed to load, falling back to placeholder')
-                        setImageError(true)
-                      }}
-                    />
+                    <>
+                      <Image
+                        src={getProxiedImageUrl(property.images[selectedImageIndex]?.url || '/placeholder-property.jpg')}
+                        alt={property.images[selectedImageIndex]?.altText || property.title}
+                        width={800}
+                        height={600}
+                        className="max-w-full max-h-full object-contain"
+                        onError={() => {
+                          console.warn('Image failed to load, falling back to placeholder')
+                          setImageError(true)
+                        }}
+                      />
+                      {/* Fullscreen button */}
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white border-0"
+                        onClick={openFullscreenImage}
+                      >
+                        <Maximize2 className="h-4 w-4" />
+                      </Button>
+                    </>
                   ) : (
-                    <div className="flex items-center justify-center h-full bg-gray-100">
+                    <div className="flex items-center justify-center h-[400px] bg-gray-100">
                       <div className="text-center">
                         <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
                         <p className="text-gray-500 text-sm">
@@ -293,10 +340,10 @@ export default function PropertyDetailPage() {
                               setImageError(false) // Reset image error when changing images
                             }}
                             className={cn(
-                              "flex-shrink-0 w-16 h-12 rounded border-2 overflow-hidden",
+                              "flex-shrink-0 w-16 h-12 rounded border-2 overflow-hidden bg-white",
                               selectedImageIndex === index 
-                                ? "border-white" 
-                                : "border-transparent opacity-70"
+                                ? "border-blue-500" 
+                                : "border-gray-300 opacity-70"
                             )}
                           >
                             <Image
@@ -304,7 +351,7 @@ export default function PropertyDetailPage() {
                               alt={`View ${index + 1}`}
                               width={64}
                               height={48}
-                              className="w-full h-full object-cover"
+                              className="w-full h-full object-contain bg-gray-50"
                             />
                           </button>
                         ))}
@@ -518,6 +565,63 @@ export default function PropertyDetailPage() {
           }}
         />
       </div>
+
+      {/* Fullscreen Image Modal */}
+      {isImageFullscreen && property.images && property.images.length > 0 && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center p-4">
+          <div className="relative max-w-screen-xl max-h-screen-xl">
+            {/* Close button */}
+            <Button
+              variant="secondary"
+              size="sm"
+              className="absolute top-4 right-4 z-10 bg-black/50 hover:bg-black/70 text-white border-0"
+              onClick={closeFullscreenImage}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+            
+            {/* Previous button */}
+            {property.images.length > 1 && (
+              <Button
+                variant="secondary"
+                size="sm"
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-white border-0"
+                onClick={goToPreviousImage}
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </Button>
+            )}
+            
+            {/* Next button */}
+            {property.images.length > 1 && (
+              <Button
+                variant="secondary"
+                size="sm"
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-white border-0"
+                onClick={goToNextImage}
+              >
+                <ChevronRight className="h-6 w-6" />
+              </Button>
+            )}
+            
+            <Image
+              src={getProxiedImageUrl(property.images[selectedImageIndex]?.url || '/placeholder-property.jpg')}
+              alt={property.images[selectedImageIndex]?.altText || property.title}
+              width={1920}
+              height={1080}
+              className="max-w-full max-h-full object-contain"
+              onClick={closeFullscreenImage}
+            />
+            
+            {/* Image counter */}
+            {property.images.length > 1 && (
+              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
+                {selectedImageIndex + 1} of {property.images.length}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

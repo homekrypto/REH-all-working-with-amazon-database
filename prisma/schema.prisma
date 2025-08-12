@@ -1,84 +1,55 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  USER
-  AGENT
-  EXPERT
-}
-
-enum SubscriptionStatus {
-  FREE
-  PENDING
-  ACTIVE
-  CANCELED
-  EXPIRED
-}
-
 model User {
-  id            String    @id @default(cuid())
-  email         String?   @unique
-  name          String?
-  image         String?
-  emailVerified DateTime?
-  passwordHash  String?
-  role          Role      @default(USER)
-  phone         String?
-  agencyName    String?
-  bio           String?
-  
-  // Subscription fields
+  id                 String                    @id @default(cuid())
+  email              String?                   @unique
+  name               String?
+  image              String?
+  emailVerified      DateTime?
+  passwordHash       String?
+  role               Role                      @default(USER)
+  phone              String?
+  agencyName         String?
+  bio                String?
   packageId          String?
-  subscriptionStatus SubscriptionStatus @default(FREE)
+  subscriptionStatus SubscriptionStatus        @default(FREE)
   subscriptionEnd    DateTime?
   stripeCustomerId   String?
-  
-  // Existing auth fields
   resetToken         String?
   resetTokenExpiry   DateTime?
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-  
-  // Relations
-  package            Package?            @relation(fields: [packageId], references: [id])
-  emailVerifications EmailVerification[]
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @updatedAt
   accounts           Account[]
+  conversations      ConversationParticipant[]
+  emailVerifications EmailVerification[]
+  favorites          Favorite[]
+  leadsAsAgent       Lead[]                    @relation("LeadAgent")
+  leadsAsUser        Lead[]                    @relation("LeadUser")
+  listings           Listing[]                 @relation("UserListings")
+  messagesSent       Message[]
   sessions           Session[]
-
-  // Back-relations
-  listings         Listing[]        @relation("UserListings")
-  favorites        Favorite[]
-  leadsAsUser      Lead[]           @relation("LeadUser")
-  leadsAsAgent     Lead[]           @relation("LeadAgent")
-  conversations    ConversationParticipant[]
-  messagesSent     Message[]
+  package            Package?                  @relation(fields: [packageId], references: [id])
 }
 
 model Package {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  price       Int      // in cents
-  interval    String   // month, year
-  listingsMax Int
-  features    String   // JSON string for SQLite compatibility
-  stripePriceId String @unique
-  active      Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  
-  users       User[]
+  id            String   @id @default(cuid())
+  name          String
+  description   String?
+  price         Int
+  interval      String
+  listingsMax   Int
+  features      String
+  stripePriceId String   @unique
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  users         User[]
 }
 
 model EmailVerification {
@@ -87,7 +58,6 @@ model EmailVerification {
   userId    String
   createdAt DateTime @default(now())
   expiresAt DateTime
-  
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -135,15 +105,13 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-// Real estate domain models
-
 model Listing {
   id              String         @id @default(cuid())
   agentId         String
   title           String
-  slug            String?        @unique // SEO-friendly URL slug (optional for migration)
+  slug            String?        @unique
   description     String?
-  metaDescription String?        // Auto-generated SEO meta description (max 160 chars)
+  metaDescription String?
   price           Int
   currency        String         @default("USD")
   location        String
@@ -152,46 +120,35 @@ model Listing {
   publishedAt     DateTime?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
-
-  agent        User           @relation("UserListings", fields: [agentId], references: [id], onDelete: Cascade)
-  images       ListingImage[]
-  favorites    Favorite[]
-  leads        Lead[]
+  favorites       Favorite[]
+  leads           Lead[]
+  agent           User           @relation("UserListings", fields: [agentId], references: [id], onDelete: Cascade)
+  images          ListingImage[]
 }
 
 model ListingImage {
-  id        String   @id @default(cuid())
-  listingId String
-  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
-
-  // SEO Fields
-  altText       String   // Example: "The modern kitchen in the Luxury Downtown Penthouse in New York"
-  originalName  String   // The original filename, e.g., "IMG_4567.JPG"
-  imageSubject  String?  // Optional: "kitchen", "bedroom", "living room", etc.
-  
-  // Storage & URLs
-  storageKey    String   @unique // The unique key/path in your cloud storage
-  
-  // URLs for Responsive Images (srcset)
-  url_large     String   // URL for the large version (e.g., 1920w)
-  url_medium    String   // URL for the medium version (e.g., 1080w)
-  url_small     String   // URL for the small version (e.g., 720w)
-  url_thumbnail String   // URL for a tiny thumbnail (e.g., 300w)
-
-  // Legacy field for backward compatibility
-  url           String   // Points to url_large for existing code
-
+  id            String   @id @default(cuid())
+  listingId     String
+  altText       String
+  originalName  String
+  imageSubject  String?
+  storageKey    String   @unique
+  url_large     String
+  url_medium    String
+  url_small     String
+  url_thumbnail String
+  url           String
   sortOrder     Int      @default(0)
   createdAt     DateTime @default(now())
+  listing       Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
 }
 
 model Favorite {
   userId    String
   listingId String
   createdAt DateTime @default(now())
-
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, listingId])
 }
@@ -204,19 +161,17 @@ model Lead {
   status    String   @default("new")
   message   String
   createdAt DateTime @default(now())
-
-  user      User     @relation("LeadUser", fields: [userId], references: [id], onDelete: Cascade)
   agent     User     @relation("LeadAgent", fields: [agentId], references: [id], onDelete: Cascade)
   listing   Listing? @relation(fields: [listingId], references: [id])
+  user      User     @relation("LeadUser", fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Conversation {
-  id           String                     @id @default(cuid())
-  title        String?                    // Optional title for group conversations
-  isGroup      Boolean                    @default(false)
-  createdAt    DateTime                   @default(now())
-  updatedAt    DateTime                   @updatedAt
-
+  id           String                    @id @default(cuid())
+  title        String?
+  isGroup      Boolean                   @default(false)
+  createdAt    DateTime                  @default(now())
+  updatedAt    DateTime                  @updatedAt
   participants ConversationParticipant[]
   messages     Message[]
 }
@@ -227,9 +182,8 @@ model ConversationParticipant {
   userId         String
   joinedAt       DateTime     @default(now())
   leftAt         DateTime?
-  role           String       @default("member") // member, admin
+  role           String       @default("member")
   lastReadAt     DateTime?
-
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -243,7 +197,20 @@ model Message {
   content        String
   createdAt      DateTime     @default(now())
   readAt         DateTime?
-
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+}
+
+enum Role {
+  USER
+  AGENT
+  EXPERT
+}
+
+enum SubscriptionStatus {
+  FREE
+  PENDING
+  ACTIVE
+  CANCELED
+  EXPIRED
 }

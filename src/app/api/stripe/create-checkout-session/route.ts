@@ -22,7 +22,7 @@ export async function POST(request: Request) {
 
     // Get user ID from email since TypeScript types aren't updated
     const userIdResult = await db.$queryRaw`
-      SELECT id FROM User WHERE email = ${session.user.email} LIMIT 1
+      SELECT id FROM "User" WHERE email = ${session.user.email} LIMIT 1
     ` as any[]
 
     const userId = userIdResult[0]?.id
@@ -45,8 +45,8 @@ export async function POST(request: Request) {
 
     // Get user from database using raw query
     const userResult = await db.$queryRaw`
-      SELECT id, email, name, role, stripeCustomerId, emailVerified 
-      FROM User WHERE id = ${userId} LIMIT 1
+      SELECT id, email, name, role, "stripeCustomerId", "emailVerified" 
+      FROM "User" WHERE id = ${userId} LIMIT 1
     ` as any[]
 
     if (!userResult || userResult.length === 0) {
@@ -68,7 +68,7 @@ export async function POST(request: Request) {
 
     // Get package details using raw query due to TypeScript issues
     const packageResult = await db.$queryRaw`
-      SELECT * FROM Package WHERE id = ${packageId} AND active = 1 LIMIT 1
+      SELECT * FROM "Package" WHERE id = ${packageId} AND active = true LIMIT 1
     ` as any[]
 
     if (!packageResult || packageResult.length === 0) {

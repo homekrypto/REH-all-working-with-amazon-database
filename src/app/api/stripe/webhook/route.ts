@@ -101,7 +101,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
 
     // Get user details for email
     const userResult = await db.$queryRaw`
-      SELECT email, name, role FROM User WHERE id = ${userId} LIMIT 1
+      SELECT email, name, role FROM "User" WHERE id = ${userId} LIMIT 1
     ` as any[]
 
     if (userResult && userResult[0]) {
@@ -278,7 +278,7 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
 
         // Get user details for notification email
         const userResult = await db.$queryRaw`
-          SELECT email, name FROM User WHERE id = ${userId} LIMIT 1
+          SELECT email, name FROM "User" WHERE id = ${userId} LIMIT 1
         ` as any[]
 
         if (userResult && userResult[0]) {

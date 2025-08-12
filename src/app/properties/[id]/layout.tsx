@@ -25,7 +25,8 @@ async function getPropertyForMetadata(id: string) {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const property = await getPropertyForMetadata(params.id)
+  const resolvedParams = await params
+  const property = await getPropertyForMetadata(resolvedParams.id)
   
   if (!property) {
     return {

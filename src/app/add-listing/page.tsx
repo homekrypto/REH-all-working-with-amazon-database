@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -152,6 +153,7 @@ const languages = [
 export default function AddListingPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { data: session } = useSession()
   const editId = searchParams.get('edit')
   const isEditMode = !!editId
   
@@ -201,14 +203,14 @@ export default function AddListingPage() {
     ownershipType: '',
     titleDeedAvailable: false,
     isExclusive: false,
-    agentName: 'John Doe', // Auto-filled from profile
-    agentPhone: '+1 (555) 123-4567', // Auto-filled from profile
-    agentEmail: 'john.doe@example.com', // Auto-filled from profile
+    agentName: '', // Will be auto-filled from user profile
+    agentPhone: '', // Will be auto-filled from user profile
+    agentEmail: '', // Will be auto-filled from user profile
     agencyName: '',
     licenseNumber: '',
     whatsappLink: '',
     languagesSpoken: [],
-    status: 'draft',
+    status: 'published', // Changed default to publish immediately
     acceptTerms: false
   })
 
@@ -217,6 +219,33 @@ export default function AddListingPage() {
   // New state for SEO-optimized image handling
   const [imageKeys, setImageKeys] = useState<string[]>([])
   const [imageSubjects, setImageSubjects] = useState<string[]>([])
+
+  // Fetch user profile data to auto-fill agent information
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!session?.user?.email) return
+
+      try {
+        const response = await fetch('/api/user/profile')
+        if (response.ok) {
+          const { user } = await response.json()
+          
+          // Auto-fill agent information from user profile
+          setListingData(prev => ({
+            ...prev,
+            agentName: user.name || '',
+            agentPhone: user.phone || '',
+            agentEmail: user.email || '',
+            agencyName: user.agencyName || ''
+          }))
+        }
+      } catch (error) {
+        console.error('Failed to fetch user profile:', error)
+      }
+    }
+
+    fetchUserProfile()
+  }, [session])
 
   // Load existing listing data in edit mode
   useEffect(() => {
@@ -1257,8 +1286,8 @@ export default function AddListingPage() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="draft">Save as Draft</SelectItem>
                             <SelectItem value="published">Publish Immediately</SelectItem>
+                            <SelectItem value="draft">Save as Draft</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>

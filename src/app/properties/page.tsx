@@ -393,7 +393,7 @@ export default function PropertySearchPage() {
                       <img 
                         src={property.image} 
                         alt={property.title}
-                        className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                        className="w-full h-64 object-contain bg-gray-50 group-hover:scale-105 transition-transform duration-300"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                       
@@ -505,7 +505,7 @@ export default function PropertySearchPage() {
                           <img 
                             src={property.image} 
                             alt={property.title}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-contain bg-gray-50"
                           />
                         </div>
                         
