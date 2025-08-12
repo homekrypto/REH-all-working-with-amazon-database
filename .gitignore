@@ -68,3 +68,4 @@ registration-test-error.png
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
+amplify-env-vars-private.txt
