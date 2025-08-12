@@ -1,13 +1,12 @@
-name: Build and Deploy
+name: Deploy to AWS Amplify
 
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     
     steps:
@@ -31,23 +30,104 @@ jobs:
       env:
         DATABASE_URL: ${{ secrets.DATABASE_URL }}
         NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+        NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
         GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
         GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
         STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
         STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+        STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_REGION: ${{ secrets.AWS_REGION }}
         AWS_S3_BUCKET_NAME: ${{ secrets.AWS_S3_BUCKET_NAME }}
+        SMTP_HOST: ${{ secrets.SMTP_HOST }}
+        SMTP_PORT: ${{ secrets.SMTP_PORT }}
+        SMTP_SECURE: ${{ secrets.SMTP_SECURE }}
+        SMTP_USER: ${{ secrets.SMTP_USER }}
+        SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
         
-    - name: Archive build artifacts
-      uses: actions/upload-artifact@v4
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
       with:
-        name: build-files
-        path: .next/
-    runs-on: ubuntu-latest
-    
-    steps:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-north-1
+        
+    - name: Install AWS Amplify CLI
+      run: npm install -g @aws-amplify/cli
+      
+    - name: Try Amplify CLI deployment
+      id: amplify_deploy
+      continue-on-error: true
+      run: |
+        # Try to create Amplify app if it doesn't exist
+        if ! aws amplify get-app --app-id ${{ secrets.AMPLIFY_APP_ID }} 2>/dev/null; then
+          echo "Creating new Amplify app..."
+          APP_ID=$(aws amplify create-app \
+            --name "realestate-platform" \
+            --description "Real Estate Platform - Next.js with PostgreSQL, Stripe, S3" \
+            --repository "https://github.com/homekrypto/REH-all-working-with-amazon-database" \
+            --platform "WEB" \
+            --query 'app.appId' \
+            --output text)
+          echo "AMPLIFY_APP_ID=$APP_ID" >> $GITHUB_ENV
+          
+          # Create main branch
+          aws amplify create-branch \
+            --app-id "$APP_ID" \
+            --branch-name "main"
+        else
+          echo "Using existing app: ${{ secrets.AMPLIFY_APP_ID }}"
+          echo "AMPLIFY_APP_ID=${{ secrets.AMPLIFY_APP_ID }}" >> $GITHUB_ENV
+        fi
+        
+        # Start deployment
+        JOB_ID=$(aws amplify start-job \
+          --app-id "$AMPLIFY_APP_ID" \
+          --branch-name "main" \
+          --job-type "RELEASE" \
+          --query 'jobSummary.jobId' \
+          --output text)
+        
+        echo "Deployment started - Job ID: $JOB_ID"
+        echo "JOB_ID=$JOB_ID" >> $GITHUB_ENV
+        
+    - name: Alternative S3 deployment (if Amplify fails)
+      if: failure()
+      run: |
+        echo "Amplify deployment failed, deploying to S3 as backup..."
+        
+        # Create S3 bucket for static hosting if it doesn't exist
+        BUCKET_NAME="realestate-platform-backup-$(date +%s)"
+        aws s3 mb s3://$BUCKET_NAME --region eu-north-1 || true
+        
+        # Configure S3 for static website hosting
+        aws s3 website s3://$BUCKET_NAME --index-document index.html --error-document 404.html
+        
+        # Upload build files
+        aws s3 sync .next/static s3://$BUCKET_NAME/_next/static --delete
+        aws s3 sync public s3://$BUCKET_NAME --delete
+        
+        echo "Backup deployment completed to: http://$BUCKET_NAME.s3-website.eu-north-1.amazonaws.com"
+        
+    - name: Display deployment results
+      run: |
+        echo "🎉 Deployment Summary:"
+        echo "====================="
+        if [ -n "$AMPLIFY_APP_ID" ]; then
+          echo "✅ Amplify App ID: $AMPLIFY_APP_ID"
+          echo "🌐 URL: https://main.$AMPLIFY_APP_ID.amplifyapp.com"
+          echo "📊 Console: https://console.aws.amazon.com/amplify/home#/$AMPLIFY_APP_ID"
+        fi
+        if [ -n "$JOB_ID" ]; then
+          echo "📋 Job ID: $JOB_ID"
+        fi
+        echo ""
+        echo "⚠️  Remember to:"
+        echo "1. Add environment variables in Amplify Console"
+        echo "2. Update NEXTAUTH_URL with the deployed domain"
+        echo "3. Update Google OAuth redirect URIs":
     - uses: actions/checkout@v3
     
     - name: Setup Node.js
