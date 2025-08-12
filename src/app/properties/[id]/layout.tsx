@@ -77,10 +77,8 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
 
 export default function PropertyLayout({
   children,
-  params
 }: {
   children: ReactNode;
-  params: { id: string };
 }) {
   return children;
 }
