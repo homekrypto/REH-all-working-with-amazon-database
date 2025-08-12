@@ -18,8 +18,9 @@ async function getPropertyForMetadata(id: string) {
   }
 }
 
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const property = await getPropertyForMetadata(params.id);
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const resolvedParams = await params;
+  const property = await getPropertyForMetadata(resolvedParams.id);
   if (!property) {
     return {
       title: 'Property Not Found | RealEstateHub',

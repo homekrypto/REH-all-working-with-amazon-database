@@ -42,12 +42,7 @@ export async function GET(request: NextRequest) {
       case 'listings':
         data = await db.listing.findMany({
           take: 50,
-          orderBy: { createdAt: 'desc' },
-          include: {
-            user: {
-              select: { name: true, email: true }
-            }
-          }
+          orderBy: { createdAt: 'desc' }
         });
         break;
       case 'packages':

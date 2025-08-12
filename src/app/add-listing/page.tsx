@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useRef, useCallback, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
@@ -15,151 +15,26 @@ import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
 import ImageUploader from '@/components/ui/image-uploader'
-import { 
-  ArrowLeft, 
-  ArrowRight, 
-  CheckCircle, 
-  Home, 
-  MapPin, 
-  DollarSign,
-  Ruler,
-  Star,
-  Upload,
-  Calendar,
-  User,
-  Eye,
-  FileText,
-  Plus,
-  X,
-  Camera,
-  Video,
-  Building,
-  Car,
-  Bed,
-  Bath,
-  Wifi,
-  Waves,
-  Shield,
-  School,
-  Hospital,
-  Train,
-  ShoppingBag,
-  Coffee
-} from 'lucide-react'
 
-interface ListingData {
-  // Step 1: General Information
-  title: string
-  description: string
-  listingType: string
-  propertyType: string
-  
-  // Step 2: Location Details
-  country: string
-  city: string
-  streetAddress: string
-  state: string
-  postalCode: string
-  latitude: number
-  longitude: number
-  
-  // Step 3: Price & Financials
-  price: number
-  currency: string
-  paymentFrequency: string
-  isNegotiable: boolean
-  acceptsCrypto: boolean
-  cryptoTypes: string[]
-  maintenanceFees: number
-  propertyTaxes: number
-  
-  // Step 4: Property Metrics
-  totalArea: number
-  livingArea: number
-  lotSize: number
-  areaUnit: string
-  yearBuilt: number
-  bedrooms: number
-  bathrooms: number
-  floors: number
-  parkingSpaces: number
-  furnishingStatus: string
-  floorNumber: number
-  hasElevator: boolean
-  view: string
-  energyEfficiencyRating: string
-  
-  // Step 5: Features & Amenities
-  features: string[]
-  nearbyPlaces: string[]
-  
-  // Step 6: Media Uploads
-  videoTourUrl: string
-  virtualTourUrl: string
-  floorPlanImage: string | null
-  
-  // Step 7: Availability & Legal
-  availableFrom: string
-  ownershipType: string
-  titleDeedAvailable: boolean
-  isExclusive: boolean
-  
-  // Step 8: Agent & Agency Information
-  agentName: string
-  agentPhone: string
-  agentEmail: string
-  agencyName: string
-  licenseNumber: string
-  whatsappLink: string
-  languagesSpoken: string[]
-  
-  // Step 9: Review & Publishing
-  status: string
-  acceptTerms: boolean
-}
-
-const countries = [
-  'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany',
-  'France', 'Spain', 'Italy', 'Portugal', 'Netherlands', 'Switzerland', 'Japan'
-]
-
-const currencies = ['USD', 'EUR', 'GBP', 'CAD', 'AUD', 'JPY', 'CHF']
-
-const propertyTypes = [
-  'Apartment', 'House', 'Villa', 'Condo', 'Townhouse', 'Land', 'Commercial', 'Office', 'Retail'
-]
-
-const listingTypes = ['For Sale', 'For Rent', 'Pre-Sale', 'Auction']
-
-const features = [
-  'Balcony', 'Swimming Pool', 'Smart Home', 'Pet Friendly', 'Gated Community',
-  'Air Conditioning', 'Heating', 'Fireplace', 'Garden', 'Garage', 'Parking',
-  'Elevator', 'Security System', 'CCTV', 'Intercom', 'Gym', 'Sauna',
-  'Concierge', 'Laundry', 'Dishwasher', 'Microwave', 'Refrigerator',
-  'Furnished', 'Unfurnished', 'Partially Furnished'
-]
-
-const nearbyPlaces = [
-  'School', 'Hospital', 'Metro Station', 'Beach', 'Shopping Mall',
-  'Restaurant', 'Cafe', 'Park', 'Supermarket', 'Pharmacy',
-  'Bank', 'Post Office', 'Gym', 'Library', 'Museum'
-]
-
-const languages = [
-  'English', 'Spanish', 'French', 'German', 'Italian', 'Portuguese',
-  'Chinese', 'Japanese', 'Korean', 'Arabic', 'Russian', 'Dutch'
-]
-
-export default function AddListingPage() {
+function AddListingContent() {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const { data: session } = useSession()
-  const editId = searchParams.get('edit')
-  const isEditMode = !!editId
   
   const [step, setStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
-  const [loadingExisting, setLoadingExisting] = useState(isEditMode)
+  const [loadingExisting, setLoadingExisting] = useState(false)
+  const [editId, setEditId] = useState<string | null>(null)
+  const [isEditMode, setIsEditMode] = useState(false)
+  
+  // Use effect to handle search params safely
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search)
+    const id = searchParams.get('edit')
+    setEditId(id)
+    setIsEditMode(!!id)
+    setLoadingExisting(!!id)
+  }, [])
+  
   const [listingData, setListingData] = useState<ListingData>({
     title: '',
     description: '',
@@ -1460,5 +1335,13 @@ export default function AddListingPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function AddListingPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AddListingContent />
+    </Suspense>
   )
 }
