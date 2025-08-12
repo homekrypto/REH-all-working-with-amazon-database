@@ -4,12 +4,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 // server.ts - Next.js Standalone + Socket.IO
-const socket_1 = require("@/lib/socket");
+const socket_1 = require("./src/lib/socket");
 const http_1 = require("http");
 const socket_io_1 = require("socket.io");
 const next_1 = __importDefault(require("next"));
 const dev = process.env.NODE_ENV !== 'production';
-const currentPort = Number(process.env.PORT) || 5544;
+const currentPort = Number(process.env.PORT) || (dev ? 8383 : 8080);
 const hostname = '0.0.0.0';
 // Custom server with Socket.IO integration
 async function createCustomServer() {
