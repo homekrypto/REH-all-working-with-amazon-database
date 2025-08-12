@@ -1,67 +1,50 @@
-import { Metadata } from 'next'
-
-type Props = {
-  params: { id: string }
-}
+import { Metadata } from 'next';
+import { ReactNode } from 'react';
 
 async function getPropertyForMetadata(id: string) {
   try {
-    // Use the internal API URL
-    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:5544'
+    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:5544';
     const response = await fetch(`${baseUrl}/api/listings/${id}`, {
-      next: { revalidate: 3600 } // Cache for 1 hour
-    })
-    
+      next: { revalidate: 3600 }
+    });
     if (!response.ok) {
-      throw new Error('Failed to fetch property')
+      throw new Error('Failed to fetch property');
     }
-    
-    const data = await response.json()
-    return data.listing
+    const data = await response.json();
+    return data.listing;
   } catch (error) {
-    console.error('Error fetching property for metadata:', error)
-    return null
+    console.error('Error fetching property for metadata:', error);
+    return null;
   }
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const property = await getPropertyForMetadata(params.id)
-  
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  const property = await getPropertyForMetadata(params.id);
   if (!property) {
     return {
       title: 'Property Not Found | RealEstateHub',
       description: 'The requested property could not be found.'
-    }
+    };
   }
-  
-  // Extract city and state/country from location for Level 1 SEO optimization
   function extractCityState(location: string): { city: string; state: string } {
-    const parts = location.split(',').map(part => part.trim()).filter(Boolean)
+    const parts = location.split(',').map(part => part.trim()).filter(Boolean);
     if (parts.length >= 2) {
       return {
         city: parts[parts.length - 2],
         state: parts[parts.length - 1]
-      }
+      };
     }
-    return { city: parts[0] || '', state: '' }
+    return { city: parts[0] || '', state: '' };
   }
-  
-  const { city, state } = extractCityState(property.location)
-  
-  // Level 1 SEO: Perfect Meta Title Format
-  // [Property Title] in [City], [State/Country] | [Brand Name]
+  const { city, state } = extractCityState(property.location);
   const optimizedTitle = state 
     ? `${property.title} in ${city}, ${state} | RealEstateHub`
-    : `${property.title} in ${city} | RealEstateHub`
-  
-  // Enhanced meta description with location reinforcement
+    : `${property.title} in ${city} | RealEstateHub`;
   const description = property.metaDescription || 
-    `View photos and details for ${property.title} in ${city}${state ? `, ${state}` : ''}. ${property.type} property. Contact an agent today!`
-  
+    `View photos and details for ${property.title} in ${city}${state ? `, ${state}` : ''}. ${property.type} property. Contact an agent today!`;
   const firstImageUrl = property.images && property.images.length > 0 
     ? property.images[0].url_large || property.images[0].url
-    : null
-  
+    : null;
   return {
     title: optimizedTitle,
     description,
@@ -89,13 +72,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     alternates: {
       canonical: `/properties/${property.slug || property.id}`
     }
-  }
+  };
 }
 
 export default function PropertyLayout({
   children,
+  params
 }: {
-  children: React.ReactNode
+  children: ReactNode;
+  params: { id: string };
 }) {
-  return children
+  return children;
 }
