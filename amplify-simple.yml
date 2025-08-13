@@ -1,0 +1,23 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - echo "🔍 SIMPLE ENV CHECK"
+        - echo "DATABASE_URL present:" && test -n "$DATABASE_URL" && echo "YES" || echo "NO"
+        - echo "NEXTAUTH_SECRET present:" && test -n "$NEXTAUTH_SECRET" && echo "YES" || echo "NO"
+        - echo "S3_ACCESS_KEY_ID present:" && test -n "$S3_ACCESS_KEY_ID" && echo "YES" || echo "NO"
+        - echo "GOOGLE_CLIENT_ID present:" && test -n "$GOOGLE_CLIENT_ID" && echo "YES" || echo "NO"
+        - npm ci
+        - npx prisma generate
+    build:
+      commands:
+        - npm run build
+  artifacts:
+    baseDirectory: .next
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
+      - .next/cache/**/*
