@@ -3,16 +3,19 @@ frontend:
   phases:
     preBuild:
       commands:
-        - echo "🔧 AMPLIFY DEBUG SESSION STARTED 🔧"
+        - echo "🔧 AMPLIFY BUILD STARTED 🔧"
         - echo "========================================="
         - echo "NODE_ENV=$NODE_ENV"
         - echo "PWD=$(pwd)"
         - echo "USER=$(whoami)"
         - echo "========================================="
-        - echo "DATABASE_URL check:" && test -n "$DATABASE_URL" && echo "✅ DATABASE_URL EXISTS" || echo "❌ DATABASE_URL MISSING"
-        - echo "NEXTAUTH_SECRET check:" && test -n "$NEXTAUTH_SECRET" && echo "✅ NEXTAUTH_SECRET EXISTS" || echo "❌ NEXTAUTH_SECRET MISSING"
-        - echo "S3_ACCESS_KEY_ID check:" && test -n "$S3_ACCESS_KEY_ID" && echo "✅ S3_ACCESS_KEY_ID EXISTS" || echo "❌ S3_ACCESS_KEY_ID MISSING"
-        - echo "GOOGLE_CLIENT_ID check:" && test -n "$GOOGLE_CLIENT_ID" && echo "✅ GOOGLE_CLIENT_ID EXISTS" || echo "❌ GOOGLE_CLIENT_ID MISSING"
+        - echo "🔍 ENVIRONMENT VARIABLE VERIFICATION:"
+        - echo "DATABASE_URL check:" && test -n "$DATABASE_URL" && echo "✅ DATABASE_URL EXISTS (${#DATABASE_URL} chars)" || echo "❌ DATABASE_URL MISSING"
+        - echo "NEXTAUTH_SECRET check:" && test -n "$NEXTAUTH_SECRET" && echo "✅ NEXTAUTH_SECRET EXISTS (${#NEXTAUTH_SECRET} chars)" || echo "❌ NEXTAUTH_SECRET MISSING"
+        - echo "S3_ACCESS_KEY_ID check:" && test -n "$S3_ACCESS_KEY_ID" && echo "✅ S3_ACCESS_KEY_ID EXISTS (${#S3_ACCESS_KEY_ID} chars)" || echo "❌ S3_ACCESS_KEY_ID MISSING"
+        - echo "GOOGLE_CLIENT_ID check:" && test -n "$GOOGLE_CLIENT_ID" && echo "✅ GOOGLE_CLIENT_ID EXISTS (${#GOOGLE_CLIENT_ID} chars)" || echo "❌ GOOGLE_CLIENT_ID MISSING"
+        - echo "STRIPE_SECRET_KEY check:" && test -n "$STRIPE_SECRET_KEY" && echo "✅ STRIPE_SECRET_KEY EXISTS (${#STRIPE_SECRET_KEY} chars)" || echo "❌ STRIPE_SECRET_KEY MISSING"
+        - echo "EMAIL_FROM check:" && test -n "$EMAIL_FROM" && echo "✅ EMAIL_FROM EXISTS ($EMAIL_FROM)" || echo "❌ EMAIL_FROM MISSING"
         - echo "========================================="
         - echo "📦 Installing dependencies..."
         - npm ci
@@ -22,6 +25,9 @@ frontend:
     build:
       commands:
         - echo "🏗️ STARTING BUILD PHASE..."
+        - echo "🔍 Final env check before build:"
+        - test -n "$DATABASE_URL" || (echo "❌ CRITICAL: DATABASE_URL missing at build time" && exit 1)
+        - test -n "$NEXTAUTH_SECRET" || (echo "❌ CRITICAL: NEXTAUTH_SECRET missing at build time" && exit 1)
         - npm run build
         - echo "✅ BUILD COMPLETED SUCCESSFULLY"
   artifacts:
