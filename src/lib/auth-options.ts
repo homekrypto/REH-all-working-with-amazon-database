@@ -8,13 +8,15 @@ import { compare } from "bcryptjs"
 const googleClientId = process.env.GOOGLE_CLIENT_ID || ''
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET || ''
 
-console.log('Google OAuth Config:', {
-  clientIdPresent: !!googleClientId,
-  clientSecretPresent: !!googleClientSecret,
-  clientIdLength: googleClientId.length,
-  environment: process.env.NODE_ENV,
-  nextAuthUrl: process.env.NEXTAUTH_URL,
-  nextAuthSecretPresent: !!process.env.NEXTAUTH_SECRET
+// Fix NEXTAUTH_URL trailing slash issue automatically
+const nextAuthUrl = process.env.NEXTAUTH_URL?.replace(/\/$/, '') || 'https://main.d1ec4l2vmh6hbe.amplifyapp.com'
+
+console.log('NextAuth Config Check:', {
+  originalUrl: process.env.NEXTAUTH_URL,
+  fixedUrl: nextAuthUrl,
+  trailingSlashRemoved: process.env.NEXTAUTH_URL !== nextAuthUrl,
+  nextAuthSecretPresent: !!process.env.NEXTAUTH_SECRET,
+  environment: process.env.NODE_ENV
 })
 
 // Validate required environment variables
@@ -36,6 +38,10 @@ if (missingVars.length > 0) {
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(db as any),
   secret: process.env.NEXTAUTH_SECRET,
+  // Explicitly override URL to fix trailing slash issue in production
+  ...(process.env.NODE_ENV === 'production' && {
+    url: nextAuthUrl,
+  }),
   providers: [
     Credentials({
       name: 'Credentials',
