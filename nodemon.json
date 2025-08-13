@@ -1,0 +1,21 @@
+{
+  "watch": [
+    "server.ts",
+    "src/app/api"
+  ],
+  "ignore": [
+    "node_modules",
+    ".next",
+    "*.log",
+    "dev.log",
+    "src/app/globals.css",
+    "package.json",
+    ".env*"
+  ],
+  "ext": "ts,tsx",
+  "delay": 2000,
+  "exec": "npx tsx server.ts",
+  "env": {
+    "NODE_ENV": "development"
+  }
+}
