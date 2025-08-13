@@ -15,11 +15,13 @@ export async function GET(request: Request) {
   }
 
   try {
-    // Fetch the image from S3 using server-side credentials
+    // Fetch the image from S3 using server-side credentials with optimizations
     const response = await fetch(imageUrl, {
       headers: {
         'User-Agent': 'RealEstate-App/1.0',
       },
+      // Add caching for better performance
+      next: { revalidate: 3600 } // Cache for 1 hour
     })
 
     if (!response.ok) {

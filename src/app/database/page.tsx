@@ -122,6 +122,7 @@ export default function DatabaseViewer() {
                 className={`p-4 border rounded-lg hover:bg-blue-50 transition-colors ${
                   selectedTable === table ? 'bg-blue-100 border-blue-500' : 'bg-white border-gray-300'
                 }`}
+                aria-label={`View ${table} table with ${count} records`}
               >
                 <div className="font-semibold capitalize">{table}</div>
                 <div className="text-sm text-gray-600">{count} records</div>
@@ -138,6 +139,7 @@ export default function DatabaseViewer() {
             <button
               onClick={fetchTableCounts}
               className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+              aria-label="Go back to database overview"
             >
               Back to Overview
             </button>

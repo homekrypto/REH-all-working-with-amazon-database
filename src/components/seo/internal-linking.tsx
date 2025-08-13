@@ -190,7 +190,7 @@ export function RelatedPropertiesModule({ currentProperty, relatedProperties = [
  */
 function RelatedPropertyCard({ property }: { property: RelatedProperty }) {
   const propertyUrl = `/properties/${property.slug || property.id}`
-  const imageUrl = property.images?.[0]?.url || '/placeholder-property.jpg'
+  const imageUrl = property.images?.[0]?.url || '/placeholder-property.svg'
   
   return (
     <Link href={propertyUrl}>

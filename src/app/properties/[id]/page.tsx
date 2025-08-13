@@ -297,7 +297,7 @@ export default function PropertyDetailPage() {
                   {property.images && property.images.length > 0 && !imageError ? (
                     <>
                       <Image
-                        src={getProxiedImageUrl(property.images[selectedImageIndex]?.url || '/placeholder-property.jpg')}
+                        src={getProxiedImageUrl(property.images[selectedImageIndex]?.url || '/placeholder-property.svg')}
                         alt={property.images[selectedImageIndex]?.altText || property.title}
                         width={800}
                         height={600}
@@ -605,7 +605,7 @@ export default function PropertyDetailPage() {
             )}
             
             <Image
-              src={getProxiedImageUrl(property.images[selectedImageIndex]?.url || '/placeholder-property.jpg')}
+              src={getProxiedImageUrl(property.images[selectedImageIndex]?.url || '/placeholder-property.svg')}
               alt={property.images[selectedImageIndex]?.altText || property.title}
               width={1920}
               height={1080}

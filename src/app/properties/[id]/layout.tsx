@@ -3,12 +3,17 @@ import { ReactNode } from 'react';
 
 async function getPropertyForMetadata(id: string) {
   try {
-    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:5544';
+    // Use correct base URL for local development
+    const baseUrl = process.env.NODE_ENV === 'development' 
+      ? `http://localhost:${process.env.PORT || 3002}`
+      : (process.env.NEXTAUTH_URL || 'https://main.d1ec4l2vmh6hbe.amplifyapp.com');
+    
     const response = await fetch(`${baseUrl}/api/listings/${id}`, {
       next: { revalidate: 3600 }
     });
     if (!response.ok) {
-      throw new Error('Failed to fetch property');
+      console.error(`Failed to fetch property ${id}: ${response.status} ${response.statusText}`);
+      return null; // Return null instead of throwing to prevent build failures
     }
     const data = await response.json();
     return data.listing;

@@ -71,7 +71,7 @@ export class EmailService {
   }
 
   async sendVerificationEmail(email: string, name: string, verificationToken: string): Promise<boolean> {
-    const verificationUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/auth/verify-email?token=${verificationToken}`
+    const verificationUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3002'}/api/auth/verify-email?token=${verificationToken}`
     
     const html = `
       <!DOCTYPE html>
@@ -127,7 +127,7 @@ export class EmailService {
   }
 
   async sendWelcomeEmail(email: string, name: string, role: string): Promise<boolean> {
-    const dashboardUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard`
+    const dashboardUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3002'}/dashboard`
     
     const roleMessages = {
       USER: 'You can now browse properties and connect with agents.',
