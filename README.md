@@ -139,3 +139,5 @@ This scaffold includes a comprehensive set of modern web development tools:
 ---
 
 Built with ❤️ for the developer community. Supercharged by [Z.ai](https://chat.z.ai) 🚀
+
+<!-- Deployment 25 Trigger - Testing YAML fix - 2025-08-13 13:50 -->
