@@ -8,6 +8,13 @@ import { compare } from "bcryptjs"
 const googleClientId = process.env.GOOGLE_CLIENT_ID || ''
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET || ''
 
+console.log('Google OAuth Config:', {
+  clientIdPresent: !!googleClientId,
+  clientSecretPresent: !!googleClientSecret,
+  clientIdLength: googleClientId.length,
+  environment: process.env.NODE_ENV
+})
+
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(db as any),
   providers: [
