@@ -6,10 +6,10 @@ async function fixS3Cors() {
   console.log('🔧 Configuring S3 CORS settings...');
   
   const s3Client = new S3Client({
-    region: process.env.AWS_REGION || 'us-east-1',
+    region: process.env.S3_REGION || process.env.AWS_REGION || 'us-east-1',
     credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      accessKeyId: process.env.S3_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || process.env.AWS_SECRET_ACCESS_KEY,
     },
   });
 
@@ -33,7 +33,7 @@ async function fixS3Cors() {
 
   try {
     const command = new PutBucketCorsCommand({
-      Bucket: process.env.AWS_S3_BUCKET_NAME,
+      Bucket: process.env.S3_BUCKET_NAME || process.env.AWS_S3_BUCKET_NAME,
       CORSConfiguration: corsConfiguration,
     });
 
