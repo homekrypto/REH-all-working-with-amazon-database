@@ -3,18 +3,27 @@ frontend:
   phases:
     preBuild:
       commands:
-        - echo "🔧 Environment variables check:"
+        - echo "🔧 AMPLIFY DEBUG SESSION STARTED 🔧"
+        - echo "========================================="
         - echo "NODE_ENV=$NODE_ENV"
-        - echo "DATABASE_URL exists:" && test -n "$DATABASE_URL" && echo "✅ YES" || echo "❌ NO"
-        - echo "NEXTAUTH_SECRET exists:" && test -n "$NEXTAUTH_SECRET" && echo "✅ YES" || echo "❌ NO"
-        - echo "S3_ACCESS_KEY_ID exists:" && test -n "$S3_ACCESS_KEY_ID" && echo "✅ YES" || echo "❌ NO"
+        - echo "PWD=$(pwd)"
+        - echo "USER=$(whoami)"
+        - echo "========================================="
+        - echo "DATABASE_URL check:" && test -n "$DATABASE_URL" && echo "✅ DATABASE_URL EXISTS" || echo "❌ DATABASE_URL MISSING"
+        - echo "NEXTAUTH_SECRET check:" && test -n "$NEXTAUTH_SECRET" && echo "✅ NEXTAUTH_SECRET EXISTS" || echo "❌ NEXTAUTH_SECRET MISSING"
+        - echo "S3_ACCESS_KEY_ID check:" && test -n "$S3_ACCESS_KEY_ID" && echo "✅ S3_ACCESS_KEY_ID EXISTS" || echo "❌ S3_ACCESS_KEY_ID MISSING"
+        - echo "GOOGLE_CLIENT_ID check:" && test -n "$GOOGLE_CLIENT_ID" && echo "✅ GOOGLE_CLIENT_ID EXISTS" || echo "❌ GOOGLE_CLIENT_ID MISSING"
+        - echo "========================================="
+        - echo "📦 Installing dependencies..."
         - npm ci
+        - echo "🔧 Generating Prisma client..."
         - npx prisma generate
-        - echo "Node version:" && node --version
-        - echo "NPM version:" && npm --version
+        - echo "✅ PREBUILD COMPLETED SUCCESSFULLY"
     build:
       commands:
+        - echo "🏗️ STARTING BUILD PHASE..."
         - npm run build
+        - echo "✅ BUILD COMPLETED SUCCESSFULLY"
   artifacts:
     baseDirectory: .next
     files:
