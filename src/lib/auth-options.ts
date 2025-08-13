@@ -12,11 +12,30 @@ console.log('Google OAuth Config:', {
   clientIdPresent: !!googleClientId,
   clientSecretPresent: !!googleClientSecret,
   clientIdLength: googleClientId.length,
-  environment: process.env.NODE_ENV
+  environment: process.env.NODE_ENV,
+  nextAuthUrl: process.env.NEXTAUTH_URL,
+  nextAuthSecretPresent: !!process.env.NEXTAUTH_SECRET
 })
+
+// Validate required environment variables
+const requiredEnvVars = {
+  NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
+  NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+  DATABASE_URL: process.env.DATABASE_URL
+}
+
+const missingVars = Object.entries(requiredEnvVars)
+  .filter(([key, value]) => !value)
+  .map(([key]) => key)
+
+if (missingVars.length > 0) {
+  console.error('❌ Missing required environment variables:', missingVars)
+  throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`)
+}
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(db as any),
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     Credentials({
       name: 'Credentials',
