@@ -8,10 +8,11 @@ const nextConfig: NextConfig = {
   // Performance optimizations for faster builds
   experimental: {
     optimizePackageImports: ['@radix-ui', 'lucide-react', '@tanstack/react-query'],
-    serverComponentsExternalPackages: ['prisma', '@prisma/client'],
   },
-  // Reduce build output for faster deploys
-  output: 'standalone',
+  // External packages for server components (moved from experimental)
+  serverExternalPackages: ['prisma', '@prisma/client'],
+  // Don't use standalone output for Amplify - it expects standard Next.js
+  // output: 'standalone',
   // Configure external image domains for Next.js Image component
   images: {
     remotePatterns: [

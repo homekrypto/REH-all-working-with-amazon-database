@@ -3,31 +3,31 @@ frontend:
   phases:
     preBuild:
       commands:
-        - echo "🚀 OPTIMIZED AMPLIFY BUILD STARTED"
-        - echo "Node.js version: $(node --version)"
-        - echo "NPM version: $(npm --version)"
-        - echo "🔍 Critical env vars:"
-        - 'test -n "$DATABASE_URL" && echo "✅ DATABASE_URL" || echo "❌ DATABASE_URL"'
-        - 'test -n "$NEXTAUTH_SECRET" && echo "✅ NEXTAUTH_SECRET" || echo "❌ NEXTAUTH_SECRET"'
-        - 'test -n "$S3_ACCESS_KEY_ID" && echo "✅ S3_ACCESS_KEY_ID" || echo "❌ S3_ACCESS_KEY_ID"'
-        # Use npm ci for faster, reliable installs
-        - echo "📦 Installing dependencies with npm ci..."
-        - npm ci --production=false --prefer-offline --no-audit --no-fund
-        # Generate Prisma client early
+        - echo "🚀 AMPLIFY BUILD - FIXING DEPLOYMENT ISSUES"
+        - echo "Node: $(node --version) | NPM: $(npm --version)"
+        - echo "🔍 Environment Variables Check:"
+        - 'test -n "$DATABASE_URL" && echo "✅ DATABASE_URL" || (echo "❌ DATABASE_URL MISSING" && exit 1)'
+        - 'test -n "$NEXTAUTH_SECRET" && echo "✅ NEXTAUTH_SECRET" || (echo "❌ NEXTAUTH_SECRET MISSING" && exit 1)'
+        - 'test -n "$S3_ACCESS_KEY_ID" && echo "✅ S3_ACCESS_KEY_ID" || (echo "❌ S3_ACCESS_KEY_ID MISSING" && exit 1)'
+        - 'test -n "$GOOGLE_CLIENT_ID" && echo "✅ GOOGLE_CLIENT_ID" || echo "⚠️ GOOGLE_CLIENT_ID missing"'
+        - 'test -n "$STRIPE_SECRET_KEY" && echo "✅ STRIPE_SECRET_KEY" || echo "⚠️ STRIPE_SECRET_KEY missing"'
+        - echo "📦 Installing dependencies..."
+        - npm ci --production=false --no-audit --no-fund
         - echo "🔧 Generating Prisma client..."
         - npx prisma generate
-        - echo "✅ Dependencies installed"
+        - echo "✅ PreBuild completed"
     build:
       commands:
-        - echo "🏗️ Building Next.js application..."
-        # Set Node.js memory limit for large builds
+        - echo "🏗️ Building Next.js for Amplify hosting..."
         - export NODE_OPTIONS="--max-old-space-size=4096"
-        # Verify critical env vars one more time
-        - 'test -n "$DATABASE_URL" || (echo "❌ DATABASE_URL missing" && exit 1)'
-        - 'test -n "$NEXTAUTH_SECRET" || (echo "❌ NEXTAUTH_SECRET missing" && exit 1)'
-        # Build with optimizations
         - npm run build
         - echo "✅ Build completed successfully"
+    postBuild:
+      commands:
+        - echo "📦 Post-build cleanup and verification..."
+        - echo "Build artifacts created:"
+        - ls -la .next/
+        - echo "✅ Ready for deployment"
   artifacts:
     baseDirectory: .next
     files:
@@ -36,4 +36,3 @@ frontend:
     paths:
       - node_modules/**/*
       - .next/cache/**/*
-      - ~/.npm/**/*
