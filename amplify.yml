@@ -3,6 +3,11 @@ frontend:
   phases:
     preBuild:
       commands:
+        - echo "🔧 Environment variables check:"
+        - echo "NODE_ENV=$NODE_ENV"
+        - echo "DATABASE_URL exists:" && test -n "$DATABASE_URL" && echo "✅ YES" || echo "❌ NO"
+        - echo "NEXTAUTH_SECRET exists:" && test -n "$NEXTAUTH_SECRET" && echo "✅ YES" || echo "❌ NO"
+        - echo "S3_ACCESS_KEY_ID exists:" && test -n "$S3_ACCESS_KEY_ID" && echo "✅ YES" || echo "❌ NO"
         - npm ci
         - npx prisma generate
         - echo "Node version:" && node --version
