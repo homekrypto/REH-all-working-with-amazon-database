@@ -5,10 +5,13 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
-  // Performance optimizations
+  // Performance optimizations for faster builds
   experimental: {
     optimizePackageImports: ['@radix-ui', 'lucide-react', '@tanstack/react-query'],
+    serverComponentsExternalPackages: ['prisma', '@prisma/client'],
   },
+  // Reduce build output for faster deploys
+  output: 'standalone',
   // Configure external image domains for Next.js Image component
   images: {
     remotePatterns: [
