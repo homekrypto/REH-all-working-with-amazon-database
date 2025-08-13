@@ -1,0 +1,40 @@
+# 🚨 CRITICAL: AWS Amplify Environment Variables Template
+# Copy these to AWS Amplify Console → Environment variables
+
+# 1. Authentication (Required for NextAuth.js)
+NEXTAUTH_SECRET=generate-a-32-character-secret-key-here
+NEXTAUTH_URL=https://main.d1ec4l2vmh6hbe.amplifyapp.com
+
+# 2. Database (Required for all data operations)
+DATABASE_URL=postgresql://username:password@host:port/database?sslmode=require
+
+# 3. Google OAuth (Required for login)
+GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+# 4. AWS S3 (Required for image uploads)
+AWS_ACCESS_KEY_ID=your-aws-access-key-id
+AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
+S3_BUCKET_NAME=your-s3-bucket-name
+AWS_REGION=us-east-1
+
+# 5. Stripe (Required for payments)
+STRIPE_SECRET_KEY=sk_live_or_sk_test_your_stripe_secret
+STRIPE_PUBLISHABLE_KEY=pk_live_or_pk_test_your_stripe_public
+STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
+
+# 6. Optional but recommended
+NODE_ENV=production
+NEXT_PUBLIC_APP_URL=https://main.d1ec4l2vmh6hbe.amplifyapp.com
+
+# ⚠️ INSTRUCTIONS:
+# 1. Replace all "your-*" values with your actual credentials
+# 2. Go to: https://console.aws.amazon.com/amplify/home#/d1ec4l2vmh6hbe/settings/variables
+# 3. Click "Manage variables"
+# 4. Add each variable one by one
+# 5. Click "Save"
+# 6. Go to Hosting tab and click "Redeploy this version"
+
+# 🔐 SECURITY NOTE:
+# These are sensitive credentials - never commit them to git!
+# Only add them through the AWS Amplify Console interface.
