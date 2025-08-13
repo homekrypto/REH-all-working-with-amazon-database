@@ -3,31 +3,30 @@ frontend:
   phases:
     preBuild:
       commands:
-        - echo "🚀 AMPLIFY BUILD - FIXING DEPLOYMENT ISSUES"
-        - echo "Node: $(node --version) | NPM: $(npm --version)"
-        - echo "🔍 Environment Variables Check:"
-        - 'test -n "$DATABASE_URL" && echo "✅ DATABASE_URL" || (echo "❌ DATABASE_URL MISSING" && exit 1)'
-        - 'test -n "$NEXTAUTH_SECRET" && echo "✅ NEXTAUTH_SECRET" || (echo "❌ NEXTAUTH_SECRET MISSING" && exit 1)'
-        - 'test -n "$S3_ACCESS_KEY_ID" && echo "✅ S3_ACCESS_KEY_ID" || (echo "❌ S3_ACCESS_KEY_ID MISSING" && exit 1)'
-        - 'test -n "$GOOGLE_CLIENT_ID" && echo "✅ GOOGLE_CLIENT_ID" || echo "⚠️ GOOGLE_CLIENT_ID missing"'
-        - 'test -n "$STRIPE_SECRET_KEY" && echo "✅ STRIPE_SECRET_KEY" || echo "⚠️ STRIPE_SECRET_KEY missing"'
-        - echo "📦 Installing dependencies..."
+        - echo "Starting Amplify build"
+        - echo "Node version $(node --version)"
+        - echo "NPM version $(npm --version)"
+        - echo "Checking environment variables"
+        - test -n "$DATABASE_URL" || (echo "DATABASE_URL missing" && exit 1)
+        - test -n "$NEXTAUTH_SECRET" || (echo "NEXTAUTH_SECRET missing" && exit 1)
+        - test -n "$S3_ACCESS_KEY_ID" || (echo "S3_ACCESS_KEY_ID missing" && exit 1)
+        - echo "Installing dependencies"
         - npm ci --production=false --no-audit --no-fund
-        - echo "🔧 Generating Prisma client..."
+        - echo "Generating Prisma client"
         - npx prisma generate
-        - echo "✅ PreBuild completed"
+        - echo "PreBuild completed"
     build:
       commands:
-        - echo "🏗️ Building Next.js for Amplify hosting..."
+        - echo "Building Next.js application"
         - export NODE_OPTIONS="--max-old-space-size=4096"
         - npm run build
-        - echo "✅ Build completed successfully"
+        - echo "Build completed successfully"
     postBuild:
       commands:
-        - echo "📦 Post-build cleanup and verification..."
+        - echo "Post-build cleanup and verification"
         - echo "Build artifacts created:"
         - ls -la .next/
-        - echo "✅ Ready for deployment"
+        - echo "Ready for deployment"
   artifacts:
     baseDirectory: .next
     files:
